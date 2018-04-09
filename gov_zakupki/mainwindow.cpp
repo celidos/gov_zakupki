@@ -69,7 +69,7 @@ void MainWindow::configureUi()
             this, SLOT(searchButtonPressed()));
 
     connect(ui->pushButton_6, SIGNAL(clicked()),
-            this, SLOT(exportToExcelMultipleRequest()));
+            this, SLOT(exportToExcelMultipleRequestButtonPressed()));
 
     connect(ui->pushButton_5, SIGNAL(clicked(bool)),
             this, SLOT(clearTextEditButtonPressed()));
@@ -82,6 +82,12 @@ void MainWindow::configureUi()
 
     connect(ui->pushButton_9, SIGNAL(clicked()),
             this, SLOT(budgetFilterSearchButtonPressed()));
+
+    connect(ui->pushButton_10, SIGNAL(clicked()),
+            this, SLOT(loadOrganizationsNamesButtonPressed()));
+
+    connect(ui->pushButton_11, SIGNAL(clicked()),
+            this, SLOT(exportToExcelBudgetFilterButtonPressed()));
 
     rpool->setProgressBar(ui->progressBar);
 }
@@ -165,10 +171,9 @@ void MainWindow::searchButtonPressed()
 
 void MainWindow::filterSearchButtonPressed()
 {
-    qWarning() << "Gay zone!";
 
-    FilterRequestParams rp;
-    rp.customer_inn = ui->lineEdit_4->text();
+    FilterRequestParams *rp = new FilterRequestParams();
+    rp->customer_inn = ui->lineEdit_4->text();
 
     rpool->addZakupkiFilterReq(rp, this, SLOT(acceptMultipleRequest(RequestGroup*)));
 
@@ -202,13 +207,10 @@ void MainWindow::acceptMultipleRequest(RequestGroup *pgroup)
     lastgroup = rpool->extractDataAndFree(pgroup);
 //    zakupki::contract_record record = data[0];
 
-
     for (auto &it : lastgroup){
         ui->plainTextEdit_2->appendPlainText(QString("# Index : ") + QString::number(it.indices[0])
                 + QString(", value =") + it.values[0]);
     }
-
-
 
     //    qWarning() << "OLOLO, we are here!!!";
 }
@@ -218,31 +220,40 @@ void MainWindow::acceptFilterRequest(RequestGroup *pgroup)
     qWarning() << "we are doing nothing here!";
 }
 
-void MainWindow::exportToExcelMultipleRequest()
+void MainWindow::exportToExcelMultipleRequestButtonPressed()
 {
-//    NumberDuck::Workbook workbook("");
-//    Worksheet* pWorksheet = workbook.GetWorksheetByIndex(0);
-
-//    Cell* pCell = pWorksheet->GetCellByAddress("A1");
-//    pCell->SetString("Totally cool spreadsheet!");
-
-//    pWorksheet->GetCell(1,1)->SetFloat(3.1417f);
-
-//    workbook.Save("SimpleExample.xls");
     QXlsx::Document xlsx;
-//    xlsx.write("A1", "Hello Qt!");
-//    xlsx.saveAs("Test.xlsx");
 
-    for (size_t i = 0; i < lastgroup.size(); ++i) {
-        zakupki::contract_record &curr_record = lastgroup[i];
+    if (!lastgroup.isEmpty()) {
 
-        for (size_t j = 0; j < curr_record.values.size(); ++j) {
-            int column_index = curr_record.indices[j];
-            xlsx.write(numToLetter(column_index) + QString::number(i + 1), curr_record.values[j]);
+        zakupki::contract_record &curr_record = lastgroup[0];
+        if (curr_record.rtype == zakupki::RT_ZAKUPKI) {
+            for (size_t j = 0; j < zakupki::AG_FIELDS_HEADERS.size(); ++j) {
+                xlsx.write(numToLetter(j) + QString::number(1), zakupki::AG_FIELDS_HEADERS[j]);
+            }
+        } else {
+            for (size_t j = 0; j < zakupki::CC_FIELDS_HEADERS.size(); ++j) {
+                xlsx.write(numToLetter(j) + QString::number(1), zakupki::CC_FIELDS_HEADERS[j]);
+            }
         }
-    }
 
-    xlsx.saveAs(ui->lineEdit_10->text() + ".xlsx");
+        for (size_t i = 0; i < lastgroup.size(); ++i) {
+            zakupki::contract_record &curr_record = lastgroup[i];
+
+            for (size_t j = 0; j < curr_record.values.size(); ++j) {
+                int column_index = curr_record.indices[j];
+                xlsx.write(numToLetter(column_index) + QString::number(i + 2), curr_record.values[j]);
+            }
+        }
+
+        xlsx.saveAs(ui->lineEdit_10->text() + ".xlsx");
+    }
+}
+
+void MainWindow::exportToExcelBudgetFilterButtonPressed()
+{
+    qWarning() << "button?";
+    rpool->exportToExcelBudgetFilter(ui->lineEdit_11->text());
 }
 
 void MainWindow::process()
@@ -256,12 +267,3 @@ void MainWindow::process()
                         ui->checkBox->isChecked());
 }
 
-QString numToLetter(int x)
-{
-    if (x < 26)
-        return QString('A' + x);
-
-    int a = x / 26  - 1;
-    int b = x % 26;
-    return QString('A' + char(a)) + QString('A' + char(b));
-}

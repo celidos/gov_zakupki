@@ -9,6 +9,7 @@
 using std::size_t;
 
 const char BLANK_CHAR = '%';
+const int  PARALLEL_LOADING_NUM_THREADS = 10;
 
 namespace zakupki {
 

@@ -158,6 +158,19 @@
             </property>
            </widget>
           </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
          </layout>
         </item>
         <item>
@@ -246,13 +259,16 @@
          <rect>
           <x>9</x>
           <y>9</y>
-          <width>571</width>
+          <width>651</width>
           <height>41</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_11">
          <item>
           <widget class="QPushButton" name="pushButton_10">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Скачать список организаций</string>
            </property>
@@ -273,58 +289,147 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="">
+       <widget class="QScrollArea" name="scrollArea">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>240</y>
-          <width>244</width>
-          <height>72</height>
+          <x>10</x>
+          <y>50</y>
+          <width>651</width>
+          <height>71</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetMinimumSize</enum>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>649</width>
+           <height>69</height>
+          </rect>
          </property>
-         <item>
-          <widget class="QScrollArea" name="scrollArea">
-           <property name="verticalScrollBarPolicy">
-            <enum>Qt::ScrollBarAsNeeded</enum>
+         <widget class="QLabel" name="label_5">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>131</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>ИНН получателя</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="lineEdit_4">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>40</y>
+            <width>161</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>3711013676</string>
+          </property>
+         </widget>
+         <widget class="QPlainTextEdit" name="plainTextEdit_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>200</y>
+            <width>1167</width>
+            <height>101</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QWidget" name="layoutWidget">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>0</y>
+            <width>261</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetMinimumSize</enum>
            </property>
-           <property name="horizontalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOff</enum>
-           </property>
+           <item>
+            <widget class="QPushButton" name="pushButton_3">
+             <property name="text">
+              <string>Искать</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Поиск по budget.gov.ru</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QPushButton" name="pushButton_8">
+            <property name="text">
+             <string>Загрузить базу в память</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QSplitter" name="splitter_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QScrollArea" name="scrollArea_2">
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents">
+           <widget class="QWidget" name="scrollAreaWidgetContents_2">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>68</width>
-              <height>68</height>
+              <width>1163</width>
+              <height>141</height>
              </rect>
             </property>
-            <widget class="QLabel" name="label_5">
+            <widget class="QLineEdit" name="lineEdit_5">
              <property name="geometry">
               <rect>
-               <x>10</x>
+               <x>100</x>
                <y>10</y>
                <width>131</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>ИНН получателя</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="lineEdit_4">
-             <property name="geometry">
-              <rect>
-               <x>140</x>
-               <y>10</y>
-               <width>161</width>
                <height>21</height>
               </rect>
              </property>
@@ -332,17 +437,7 @@
               <string>3711013676</string>
              </property>
             </widget>
-            <widget class="QPlainTextEdit" name="plainTextEdit_3">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>200</y>
-               <width>1167</width>
-               <height>101</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_6">
+            <widget class="QLabel" name="label_7">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -355,27 +450,7 @@
               <string>Период времени</string>
              </property>
             </widget>
-            <widget class="QDateEdit" name="dateEdit">
-             <property name="geometry">
-              <rect>
-               <x>180</x>
-               <y>40</y>
-               <width>111</width>
-               <height>21</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QDateEdit" name="dateEdit_2">
-             <property name="geometry">
-              <rect>
-               <x>360</x>
-               <y>40</y>
-               <width>110</width>
-               <height>21</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="checkBox_2">
+            <widget class="QCheckBox" name="checkBox_4">
              <property name="geometry">
               <rect>
                <x>140</x>
@@ -388,7 +463,20 @@
               <string>c</string>
              </property>
             </widget>
-            <widget class="QCheckBox" name="checkBox_3">
+            <widget class="QLabel" name="label_8">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>81</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>ГБРС ИНН</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_5">
              <property name="geometry">
               <rect>
                <x>310</x>
@@ -401,313 +489,212 @@
               <string>по</string>
              </property>
             </widget>
+            <widget class="QDateEdit" name="dateEdit_3">
+             <property name="geometry">
+              <rect>
+               <x>360</x>
+               <y>40</y>
+               <width>110</width>
+               <height>21</height>
+              </rect>
+             </property>
+            </widget>
+            <widget class="QDateEdit" name="dateEdit_4">
+             <property name="geometry">
+              <rect>
+               <x>180</x>
+               <y>40</y>
+               <width>111</width>
+               <height>21</height>
+              </rect>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_9">
+             <property name="geometry">
+              <rect>
+               <x>240</x>
+               <y>10</y>
+               <width>81</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>ГБРС КПП</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="lineEdit_6">
+             <property name="geometry">
+              <rect>
+               <x>320</x>
+               <y>10</y>
+               <width>131</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>3711013676</string>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="pushButton_9">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>100</y>
+               <width>91</width>
+               <height>25</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Запрос!</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_13">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>70</y>
+               <width>131</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Цена контракта с</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="lineEdit_7">
+             <property name="geometry">
+              <rect>
+               <x>140</x>
+               <y>70</y>
+               <width>151</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="lineEdit_8">
+             <property name="geometry">
+              <rect>
+               <x>330</x>
+               <y>70</y>
+               <width>171</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>200000000000</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_14">
+             <property name="geometry">
+              <rect>
+               <x>300</x>
+               <y>70</y>
+               <width>21</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>до</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_15">
+             <property name="geometry">
+              <rect>
+               <x>270</x>
+               <y>100</y>
+               <width>101</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>            Имя файла:</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="lineEdit_11">
+             <property name="geometry">
+              <rect>
+               <x>370</x>
+               <y>100</y>
+               <width>200</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>test</string>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_16">
+             <property name="geometry">
+              <rect>
+               <x>580</x>
+               <y>100</y>
+               <width>23</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>.xlsx</string>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="pushButton_11">
+             <property name="geometry">
+              <rect>
+               <x>160</x>
+               <y>100</y>
+               <width>101</width>
+               <height>25</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Экспорт в Excel</string>
+             </property>
+            </widget>
            </widget>
           </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_3">
-           <property name="text">
-            <string>Искать</string>
-           </property>
+          <widget class="QWidget" name="verticalLayoutWidget_2">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>Лог</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTextEdit" name="textEdit"/>
+            </item>
+           </layout>
           </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_2">
-           <property name="text">
-            <string>Очистить</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="">
-        <property name="geometry">
-         <rect>
-          <x>50</x>
-          <y>170</y>
-          <width>291</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_7"/>
-       </widget>
-       <widget class="QWidget" name="">
-        <property name="geometry">
-         <rect>
-          <x>50</x>
-          <y>120</y>
-          <width>291</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_5"/>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>Поиск по budget.gov.ru</string>
-       </attribute>
-       <widget class="QWidget" name="horizontalLayoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>631</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
-          <widget class="QPushButton" name="pushButton_7">
-           <property name="text">
-            <string>Обновить базы</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_8">
-           <property name="text">
-            <string>Загрузить базу в память</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QScrollArea" name="scrollArea_2">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>60</y>
-          <width>601</width>
-          <height>281</height>
-         </rect>
-        </property>
-        <property name="widgetResizable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents_2">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>599</width>
-           <height>279</height>
-          </rect>
-         </property>
-         <widget class="QLineEdit" name="lineEdit_5">
-          <property name="geometry">
-           <rect>
-            <x>100</x>
-            <y>10</y>
-            <width>131</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>3711013676</string>
-          </property>
          </widget>
-         <widget class="QLabel" name="label_7">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>40</y>
-            <width>131</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Период времени</string>
-          </property>
-         </widget>
-         <widget class="QCheckBox" name="checkBox_4">
-          <property name="geometry">
-           <rect>
-            <x>140</x>
-            <y>40</y>
-            <width>41</width>
-            <height>23</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>c</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_8">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>10</y>
-            <width>81</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>ГБРС ИНН</string>
-          </property>
-         </widget>
-         <widget class="QCheckBox" name="checkBox_5">
-          <property name="geometry">
-           <rect>
-            <x>310</x>
-            <y>40</y>
-            <width>41</width>
-            <height>23</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>по</string>
-          </property>
-         </widget>
-         <widget class="QDateEdit" name="dateEdit_3">
-          <property name="geometry">
-           <rect>
-            <x>360</x>
-            <y>40</y>
-            <width>110</width>
-            <height>21</height>
-           </rect>
-          </property>
-         </widget>
-         <widget class="QDateEdit" name="dateEdit_4">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>40</y>
-            <width>111</width>
-            <height>21</height>
-           </rect>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_9">
-          <property name="geometry">
-           <rect>
-            <x>240</x>
-            <y>10</y>
-            <width>81</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>ГБРС КПП</string>
-          </property>
-         </widget>
-         <widget class="QTextEdit" name="textEdit">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>170</y>
-            <width>541</width>
-            <height>81</height>
-           </rect>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="lineEdit_6">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>10</y>
-            <width>131</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>3711013676</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_10">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>140</y>
-            <width>131</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Лог</string>
-          </property>
-         </widget>
-         <widget class="QPushButton" name="pushButton_9">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>100</y>
-            <width>111</width>
-            <height>25</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Запрос!</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_13">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>70</y>
-            <width>131</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Цена контракта с</string>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="lineEdit_7">
-          <property name="geometry">
-           <rect>
-            <x>140</x>
-            <y>70</y>
-            <width>151</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="lineEdit_8">
-          <property name="geometry">
-           <rect>
-            <x>330</x>
-            <y>70</y>
-            <width>171</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>200000000000</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_14">
-          <property name="geometry">
-           <rect>
-            <x>300</x>
-            <y>70</y>
-            <width>21</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>до</string>
-          </property>
-         </widget>
-        </widget>
-       </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

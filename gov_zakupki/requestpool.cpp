@@ -57,26 +57,27 @@ void RequestPool::addGroup(QStringList &reqs, QObject *obj, const char *slot,
 
 
 
-void RequestPool::addZakupkiFilterReq(FilterRequestParams &rp, QObject *obj,
+void RequestPool::addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj,
                                const char *slot, void *info)
 {
     filterreq_lastobj = obj;
     filterreq_lastslot = slot;
-    QString customer_organization_name;
-    rp.customer_inn = rp.customer_inn.trimmed();
-    if (!rp.customer_inn.isEmpty()) {
+    rp->customer_inn = rp->customer_inn.trimmed();
+    if (!rp->customer_inn.isEmpty()) {
         // looking for certain customer inn
         // let's know organization name firstly
+
+
 
         QString customer_inn_url = QString("http://zakupki.gov.ru/epz/")
             + "organization/chooseOrganization/chooseOrganizationTable.html?"
             + "placeOfSearch=FZ_94&organizationType=ALL&searchString="
-            + rp.customer_inn
+            + rp->customer_inn
             + "&page=1";
 
         fpool->addDownload(customer_inn_url, this,
                            SLOT(acceptCustomerInn(FileDownloader*)),
-                           nullptr);
+                           (void *)rp);
     }
 }
 
@@ -159,15 +160,14 @@ bool match(FilterRequestParams &rp, zakupki::contract_record &x) {
 QVector<int> RequestPool::addBudgetFilter(FilterRequestParams &rp)
 {
     if (budgetDbReady) {
-        QVector<int> ans;
-
+        last_budgetFilter.clear();
         for (int i = 0; i < budget_db.size(); ++i) {
             zakupki::contract_record &el = budget_db[i];
             if (match(rp, el)) {
-                ans.append(i);
+                last_budgetFilter.append(i);
             }
         }
-        return ans;
+        return last_budgetFilter;
     }
     return QVector<int>();
 }
@@ -186,6 +186,23 @@ Group RequestPool::extractDataAndFree(RequestGroup *pgroup)
     //    return puredata;
 
     return puredata;
+}
+
+void RequestPool::exportToExcelBudgetFilter(QString filename)
+{
+    qWarning() << "Exporting budget filter to excel!";
+    QXlsx::Document xlsx;
+    for (size_t i = 0; i < last_budgetFilter.size(); ++i) {
+        zakupki::contract_record &curr_record = budget_db[last_budgetFilter[i]];
+
+        for (size_t j = 0; j < curr_record.values.size(); ++j) {
+            int column_index = curr_record.indices[j];
+            xlsx.write(numToLetter(column_index) + QString::number(i + 1), curr_record.values[j]);
+        }
+    }
+
+    xlsx.saveAs(filename + ".xlsx");
+    qWarning() << "Export done!";
 }
 
 void RequestPool::updateBudgetDatabase()
@@ -225,14 +242,12 @@ void RequestPool::loadOrganizationsFromZakupki()
     }
 
 
-
-
-    for (int i = 1; i <= 10; ++i) {
+    for (int i = 1; i <= 3; ++i) {
         fpool->addDownload(QString("http://zakupki.gov.ru/epz/organization/")
             + "chooseOrganization/chooseOrganizationTable.html?placeOfSearch=FZ_94"
             + "&organizationType=ALL&searchString=&page="
             + QString::number(zakupkiOrgDbSubmittedPagesCount),
-            this, SLOT(acceptBudgetDbPartialData(FileDownloader*)));
+            this, SLOT(acceptZakupkiOrganizationInfoPage(FileDownloader*)));
 
         ++zakupkiOrgDbSubmittedPagesCount;
     }
@@ -265,30 +280,31 @@ void RequestPool::acceptProgress()
     }
 }
 
-QStringList getGoodOrganizationName(QString &html)
+OrganizationInfo getGoodOrganizationName(QString &html)
 {
+    OrganizationInfo orginfo;
     int general_title_pos = html.indexOf("organizationMap[\"0\"] = {", 0);
     int jumper = html.indexOf("cpz: '", general_title_pos + 1);
     QString cpz = html.mid(jumper + 6,
         html.indexOf("'", jumper + 7) - jumper - 6);
-    cpz = removeHtml(cpz);
+    orginfo.cpz = removeHtml(cpz);
     qWarning() << "cpz " << cpz;
 
     jumper = html.indexOf("fz94id: '", general_title_pos + 1);
     QString fz94id = html.mid(jumper + 9,
         html.indexOf("'", jumper + 10) - jumper - 9);
-    fz94id = removeHtml(fz94id);
+    orginfo.fz94id = removeHtml(fz94id);
     qWarning() << "fz94id " << fz94id;
 
     jumper = html.indexOf("fz223id: '", general_title_pos + 1);
     QString fz223id = html.mid(jumper + 10,
         html.indexOf("'", jumper + 10) - jumper - 10);
-    fz223id = removeHtml(fz223id);
+    orginfo.fz223id = removeHtml(fz223id);
 
     jumper = html.indexOf("inn: '", general_title_pos + 1);
     QString inn = html.mid(jumper + 6,
         html.indexOf("'", jumper + 6) - jumper - 6);
-    inn = removeHtml(inn);
+    orginfo.inn = removeHtml(inn);
 
     qWarning() << "inn " << inn;
 
@@ -300,7 +316,7 @@ QStringList getGoodOrganizationName(QString &html)
 
     QString customer_title = html.mid(purchase_title_pos + 4,
         html.indexOf("</td>", purchase_title_pos + 2) - purchase_title_pos - 4);
-    customer_title = removeHtml(customer_title);
+    orginfo.fullname = removeHtml(customer_title);
     qWarning() << customer_title;
 
 //    purchase_title_pos = html.indexOf("<td>", purchase_title_pos + 1);
@@ -322,22 +338,25 @@ QStringList getGoodOrganizationName(QString &html)
 //        html.indexOf("</td>", purchase_title_pos + 2) - purchase_title_pos - 4);
 //    customer_inn = removeHtml(customer_inn);
 
-    QStringList sl;
-    sl << customer_title << cpz << fz94id << inn;
+//    QStringList sl;
+//    sl << customer_title << cpz << fz94id << inn;
 
-    return sl;
+    return orginfo;
 }
 
 void RequestPool::acceptCustomerInn(FileDownloader *ploader)
 {
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
+    FilterRequestParams *rp = (FilterRequestParams *)ploader->info;
     QString html = QString(filePool->extractDataAndFree(ploader));
 
-    QStringList customer_params = getGoodOrganizationName(html);
 
+    rp->orginfo = getGoodOrganizationName(html);
+
+    rp->page_num = 1;
     QString new_url = QString("http://zakupki.gov.ru/epz/contract/extendedsearch/")
             + "results.html?morphology=on&openMode=USE_DEFAULT_PARAMS"
-            + "&pageNumber=1&sortDirection=false&recordsPerPage=_50"
+            + "&pageNumber=1&sortDirection=false&recordsPerPage=_100"
             + "&sortBy=PO_DATE_OBNOVLENIJA&fz44=on"
             + "&priceFrom=0"
             + "&priceTo=200000000000"
@@ -348,14 +367,15 @@ void RequestPool::acceptCustomerInn(FileDownloader *ploader)
             + "&contractStageList_2=on"
             + "&contractStageList_3=on"
             + "&contractStageList=0%2C1%2C2%2C3"
-            + "&customerTitle=" + QUrl::toPercentEncoding(customer_params[0])
-            + "&customerCode=" + customer_params[1]
-            + "&customerFz94id=" + customer_params[2]
-            + "&customerInn=" + customer_params[3];
+            + "&customerTitle=" + QUrl::toPercentEncoding(rp->orginfo.fullname)
+            + "&customerCode=" + rp->orginfo.cpz
+            + "&customerFz94id=" + rp->orginfo.fz94id
+            + "&customerInn=" + rp->orginfo.inn;
 
     qWarning() << "we got url :\n\n" << new_url;
 
-    filePool->addDownload(new_url, this, SLOT(acceptFilterSearchResults(FileDownloader*)));
+    filePool->addDownload(new_url, this, SLOT(acceptFilterSearchResults(FileDownloader*)),
+                          (void*)rp);
     //    qWarning() << html;
 }
 
@@ -379,6 +399,34 @@ void RequestPool::acceptFilterSearchResults(FileDownloader *ploader)
         IDs << removeHtml(newid).mid(2);
     }
 
+    FilterRequestParams *rp = (FilterRequestParams *)ploader->info;
+    ++rp->page_num;
+    if (!positions.isEmpty() && rp->page_num < 10) {
+        QString new_url = QString("http://zakupki.gov.ru/epz/contract/extendedsearch/")
+                + "results.html?morphology=on&openMode=USE_DEFAULT_PARAMS"
+                + "&pageNumber=" + QString::number(rp->page_num)
+                + "&sortDirection=false&recordsPerPage=_100"
+                + "&sortBy=PO_DATE_OBNOVLENIJA&fz44=on"
+                + "&priceFrom=0"
+                + "&priceTo=200000000000"
+                + "&advancePercentFrom=hint"
+                + "&advancePercentTo=hint"
+                + "&contractStageList_0=on"
+                + "&contractStageList_1=on"
+                + "&contractStageList_2=on"
+                + "&contractStageList_3=on"
+                + "&contractStageList=0%2C1%2C2%2C3"
+                + "&customerTitle=" + QUrl::toPercentEncoding(rp->orginfo.fullname)
+                + "&customerCode=" + rp->orginfo.cpz
+                + "&customerFz94id=" + rp->orginfo.fz94id
+                + "&customerInn=" + rp->orginfo.inn;
+
+        qWarning() << "we got url :\n\n" << new_url;
+
+        filePool->addDownload(new_url, this, SLOT(acceptFilterSearchResults(FileDownloader*)),
+                              (void*)rp);
+    }
+
     qWarning() << "Найденные ссылки:";
     for (auto &it : IDs) {
         qWarning() << "* " << it;
@@ -395,7 +443,7 @@ void RequestPool::acceptBudgetDbInitPage(FileDownloader *ploader)
     QJsonDocument d = QJsonDocument::fromJson(json_text.toUtf8());
     QJsonObject obj = d.object();
 
-    budgetDbMaxPagesCount = 1;//obj["pageCount"].toInt();
+    budgetDbMaxPagesCount = obj["pageCount"].toInt();
 
     qWarning() << "we think that here " << budgetDbMaxPagesCount << "pages!";
 
@@ -408,7 +456,7 @@ void RequestPool::acceptBudgetDbInitPage(FileDownloader *ploader)
         progressbar->setValue(0);
     }
 
-    for (int i = 1; i <= std::min(10, budgetDbMaxPagesCount); ++i) {
+    for (int i = 1; i <= std::min(PARALLEL_LOADING_NUM_THREADS, budgetDbMaxPagesCount); ++i) {
         fpool->addDownload(QString("http://budget.gov.ru/epbs/registry/grants/data?")
                            + "pageNum=" + QString::number(i) + "&pageSize="
                            + QString::number(zakupki::BUDGET_DB_PART_SIZE) + "&sortField=renewdate&sortDir=desc"
@@ -455,8 +503,6 @@ void RequestPool::acceptBudgetDbPartialData(FileDownloader *ploader)
                            this, SLOT(acceptBudgetDbPartialData(FileDownloader*)));
         ++budgetDbSubmittedPagesCount;
 
-
-
     }
 
     qWarning() << budget_db.size();
@@ -464,48 +510,108 @@ void RequestPool::acceptBudgetDbPartialData(FileDownloader *ploader)
 
 void RequestPool::acceptZakupkiOrganizationInfoPage(FileDownloader *ploader)
 {
+    qWarning() << "accepting organization page";
+
+    FileDownloadsPool *filePool = FileDownloadsPool::instance();
+    QString html = QString(filePool->extractDataAndFree(ploader));
+
+//    qWarning() << html;
+
+    if (html.indexOf("noDataToDisplay") != -1) {
+        qWarning() << "page" << zakupkiOrgDbAcceptedPagesCount << "broken!";
+        return;
+    }
+
     int general_title_pos = 0;
+
+    int local_start_index = org_db.size();
 
     while ((general_title_pos = html.indexOf("organizationMap[",
                                              general_title_pos + 1)) != -1) {
+
+        OrganizationInfo orginfo;
+
         int jumper = html.indexOf("cpz: '", general_title_pos + 1);
         QString cpz = html.mid(jumper + 6,
             html.indexOf("'", jumper + 7) - jumper - 6);
-        cpz = removeHtml(cpz);
-        qWarning() << "cpz " << cpz;
+        orginfo.cpz = removeHtml(cpz);
 
         jumper = html.indexOf("fz94id: '", general_title_pos + 1);
         QString fz94id = html.mid(jumper + 9,
             html.indexOf("'", jumper + 10) - jumper - 9);
-        fz94id = removeHtml(fz94id);
-        qWarning() << "fz94id " << fz94id;
+        orginfo.fz94id = removeHtml(fz94id);
 
         jumper = html.indexOf("fz223id: '", general_title_pos + 1);
         QString fz223id = html.mid(jumper + 10,
             html.indexOf("'", jumper + 10) - jumper - 10);
-        fz223id = removeHtml(fz223id);
+        orginfo.fz223id = removeHtml(fz223id);
 
         jumper = html.indexOf("inn: '", general_title_pos + 1);
         QString inn = html.mid(jumper + 6,
             html.indexOf("'", jumper + 6) - jumper - 6);
-        inn = removeHtml(inn);
+        orginfo.inn = removeHtml(inn);
+
+        org_db.append(orginfo);
+//        qWarning() << "cpz " << cpz << " fz94id " << fz94id << " fz223id " << fz223id << " inn " << inn;
     }
 
-    qWarning() << "inn " << inn;
+    int local_pos_index = local_start_index;
 
-    // --------------------------------------------------
+//    qWarning() << "inn " << inn;
 
-    int purchase_title_pos = html.indexOf("<tr class=", 0);
-    purchase_title_pos = html.indexOf("<td>", purchase_title_pos + 1);
-    purchase_title_pos = html.indexOf("<td>", purchase_title_pos + 1);
+//     --------------------------------------------------
 
-    QString customer_title = html.mid(purchase_title_pos + 4,
-        html.indexOf("</td>", purchase_title_pos + 2) - purchase_title_pos - 4);
-    customer_title = removeHtml(customer_title);
-    qWarning() << customer_title;
+    int purchase_starttitle_pos = 0;
+    int purchase_title_pos = 0;
 
-    QStringList sl;
-    sl << customer_title << cpz << fz94id << inn;
+    while ((purchase_starttitle_pos = html.indexOf("<tr class=",
+                                              purchase_title_pos)) != -1) {
 
-    return sl;
+        purchase_title_pos = html.indexOf("<td>", purchase_starttitle_pos + 1);
+        purchase_title_pos = html.indexOf("<td>", purchase_title_pos + 1);
+
+        int temp;
+        temp = html.indexOf("</td>", purchase_title_pos + 2);
+        QString customer_title = html.mid(purchase_title_pos + 4,
+             (temp) - purchase_title_pos - 4);
+
+        purchase_title_pos = temp;
+
+        org_db[local_pos_index].fullname = removeHtml(customer_title);
+
+        purchase_title_pos = html.indexOf("<td>", purchase_title_pos + 1);
+        purchase_title_pos = html.indexOf("<td>", purchase_title_pos + 1);
+
+        temp = html.indexOf("</td>", purchase_title_pos + 2);
+        QString customer_kpp = html.mid(purchase_title_pos + 4,
+             (temp) - purchase_title_pos - 4);
+        org_db[local_pos_index].kpp = removeHtml(customer_kpp);
+
+//        qWarning() << "customer title :" << customer_title << "; kpp " << customer_kpp;
+
+        purchase_title_pos = temp;
+        ++local_pos_index;
+
+//        qWarning() << "custom_title" << customer_title;
+    }
+//    qWarning() << "Full of pidors!";
+//    qWarning() << zakupkiOrgDbAcceptedPagesCount;
+    ++zakupkiOrgDbAcceptedPagesCount;
+//    qWarning() << zakupkiOrgDbAcceptedPagesCount;
+    if (progressbar) {
+        progressbar->setValue(zakupkiOrgDbAcceptedPagesCount);
+    }
+
+//    QStringList sl;
+//    sl << customer_title << cpz << fz94id << inn;
+}
+
+QString numToLetter(int x)
+{
+    if (x < 26)
+        return QString('A' + x);
+
+    int a = x / 26  - 1;
+    int b = x % 26;
+    return QString('A' + char(a)) + QString('A' + char(b));
 }

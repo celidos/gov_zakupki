@@ -34,6 +34,15 @@ struct RequestParams {
     RequestParams() {}
 };
 
+struct OrganizationInfo {
+    QString fullname;
+    QString cpz;
+    QString fz94id;
+    QString fz223id;
+    QString inn;
+    QString kpp;
+};
+
 struct FilterRequestParams {
     QString id;
     QString customer_inn;
@@ -49,7 +58,10 @@ struct FilterRequestParams {
     long double maxSum;
     long double minSum;
 
+    OrganizationInfo orginfo;
+
     zakupki::ContractRecordType recordtype;
+    int page_num;
 
     FilterRequestParams() {}
     ~FilterRequestParams() {}
@@ -122,6 +134,10 @@ private:
 
     QObject *responseObject;
     const char *responseSlot;
+
+    int activatedReqs;
+    int acceptedReqs;
+    int totalReqs;
 
 public slots:
     void acceptSingleRequest(SingleRequest *psingle);

@@ -76,26 +76,26 @@ private slots:
 
     void copyButtonClicked(int index);
 
+
     // f fast
+    void clearTextEditButtonPressed();
 
     void refreshDataBase();
     void loadDatabaseButtonPressed();
     void budgetFilterSearchButtonPressed();
 
     void loadOrganizationsNamesButtonPressed();
+    void exportToExcelMultipleRequestButtonPressed();
+    void exportToExcelBudgetFilterButtonPressed();
 
     // LIST SEARCH -------------------------------------------------------------
 public slots:
-
-    void clearTextEditButtonPressed();
 
     void acceptSingleRequest  (RequestGroup *pgroup);
     void acceptMultipleRequest(RequestGroup *pgroup);
     void acceptFilterRequest  (RequestGroup *pgroup);
 
-    void exportToExcelMultipleRequest();
 
-    void
 
     // f fast
 

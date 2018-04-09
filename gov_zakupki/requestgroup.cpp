@@ -312,7 +312,8 @@ void SingleRequest::downloadEveryPage(QString url)
 RequestGroup::RequestGroup(QString singleReq, QObject *obj, const char *slot,
                            bool needFiles, ReqDocumentManager *docmanager,
                            QObject *parent):
-    QObject(parent), responseObject(obj), responseSlot(slot)
+    QObject(parent), responseObject(obj), responseSlot(slot),
+    activatedReqs(0), acceptedReqs(0), totalReqs(0)
 {
     requests_params.append(RequestParams(singleReq, needFiles, docmanager));
 }
@@ -320,7 +321,8 @@ RequestGroup::RequestGroup(QString singleReq, QObject *obj, const char *slot,
 RequestGroup::RequestGroup(QStringList &reqs, QObject *obj, const char *slot,
                            bool needFiles, ReqDocumentManager *docmanager,
                            QObject *parent):
-    QObject(parent), responseObject(obj), responseSlot(slot)
+    QObject(parent), responseObject(obj), responseSlot(slot),
+    activatedReqs(0), acceptedReqs(0), totalReqs(0)
 {
     for (auto &it : reqs) {
         requests_params.append(RequestParams(it, needFiles, docmanager));
@@ -334,11 +336,19 @@ RequestGroup::~RequestGroup()
 
 void RequestGroup::activate()
 {
+    totalReqs = requests_params.length();
+    activatedReqs = 0;
+
     for (auto &it : requests_params) {
         SingleRequest *newReq = new SingleRequest(it, this,
             SLOT(acceptSingleRequest(SingleRequest*)), this);
         single_reqs.append(newReq);
-        newReq->activate();
+//        newReq->activate();
+    }
+
+    for (int i = totalReqs - 1; i >= std::max(0, totalReqs - PARALLEL_LOADING_NUM_THREADS); --i) {
+        single_reqs[i]->activate();
+        ++activatedReqs;
     }
 }
 
@@ -365,6 +375,12 @@ void RequestGroup::acceptSingleRequest(SingleRequest *psingle)
             it.remove();
     }
 //    return puredata;
+
+    ++acceptedReqs;
+    if (activatedReqs < totalReqs && !single_reqs.isEmpty()) {
+        single_reqs[totalReqs - activatedReqs - 1]->activate();
+        ++activatedReqs;
+    }
 
     if (requests_params.length() == accepted.length()) {
         emit ready(this);

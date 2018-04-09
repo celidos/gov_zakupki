@@ -26,14 +26,12 @@ FileDownloadsPool::~FileDownloadsPool()
 void FileDownloadsPool::addDownload(QString req, QObject *obj, const char *slot,
                                     void *info)
 {
-    qDebug() << "adddownload Соединяем sign1";
 
     pool.append(new FileDownloader(QUrl(req), this));
     pool.back()->info = info;
-    qDebug() << "adddownload Соединяем sign2";
     connect(pool.back(), SIGNAL(downloaded(FileDownloader *, QByteArray *)),  obj, slot);
 //    connect(this, SIGNAL(fileDownloaded(QByteArray)), obj, slot);
-    qDebug() << "adddownload Соединение завершено!";
+
     pool.back()->activate();                                                    /// ### thread unsafe
 }
 

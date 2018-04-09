@@ -13,8 +13,14 @@
 
 #include "xlsxdocument.h"
 
-struct OrganizationInfo {
-    QString fillname;
+
+
+struct ZakupkiSearchParams {
+    OrganizationInfo orginfo;
+    double priceFrom;
+    double priceTo;
+
+    int pageNum;
 };
 
 class RequestPool : public QObject
@@ -34,11 +40,13 @@ public:
                   bool needFiles=false, void *info = nullptr);
     void addGroup(RequestGroup &group, QObject *obj, const char *slot, void *info = nullptr);
 
-    void addZakupkiFilterReq(FilterRequestParams &rp, QObject *obj, const char *slot, void *info = nullptr);
+    void addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj, const char *slot, void *info = nullptr);
 
     QVector<int> addBudgetFilter(FilterRequestParams &rp);
 
     Group extractDataAndFree(RequestGroup *pgroup);
+
+    void exportToExcelBudgetFilter(QString filename);
 
     // f fast
 
@@ -58,7 +66,10 @@ private:
     QObject *filterreq_lastobj;
     const char *filterreq_lastslot;
 
+    QVector<int> last_budgetFilter;
+
     QVector<zakupki::contract_record> budget_db;
+    QVector<OrganizationInfo> org_db;
 
     void getLastUpdateDate(); /// ### not working, todo
 
@@ -86,5 +97,7 @@ private slots:
 signals:
 
 };
+
+QString numToLetter(int x);
 
 #endif // REQUESTPOOL_H
