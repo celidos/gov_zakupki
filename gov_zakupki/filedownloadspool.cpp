@@ -30,7 +30,6 @@ void FileDownloadsPool::addDownload(QString req, QObject *obj, const char *slot,
     pool.append(new FileDownloader(QUrl(req), this));
     pool.back()->info = info;
     connect(pool.back(), SIGNAL(downloaded(FileDownloader *, QByteArray *)),  obj, slot);
-//    connect(this, SIGNAL(fileDownloaded(QByteArray)), obj, slot);
 
     pool.back()->activate();                                                    /// ### thread unsafe
 }

@@ -60,6 +60,11 @@ void RequestPool::addGroup(QStringList &reqs, QObject *obj, const char *slot,
 void RequestPool::addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj,
                                const char *slot)
 {
+    if (filterzakupki_lastrp)
+        delete filterzakupki_lastrp;
+    last_zakupki_ids.clear();
+    last_zakupkiFilter.clear();
+
     filterzakupki_lastobj = obj;
     filterzakupki_lastslot = slot;
     rp->customer_inn = rp->customer_inn.trimmed();
@@ -82,9 +87,13 @@ void RequestPool::addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj,
 int find_index(QVector<int> &ind, int lookingFor)
 {
     int t = 0;
-    for (t = 0; t < ind.size(); ++t)
+    qWarning() << "Warning, ind size = " << ind.size();
+
+    for (t = 0; t < ind.size(); ++t) {
+
         if (ind[t] == lookingFor)
             return t;
+    }
     return 0;
 }
 
@@ -154,7 +163,7 @@ bool match(FilterRequestParams &rp, zakupki::contract_record &x) {
         qWarning() << "ZAKUPKI CASE";
         if (!rp.gbrs_kpp.isEmpty()) {
             int t = find_index(x.indices, zakupki::CC_INDEX_PROVIDER_KPP);
-            qWarning() << "gbrskpp " << rp.gbrs_kpp << " t = " << t << " xvalue[t]="<< x.values[t];
+            qWarning() << "gbrskpp " << rp.gbrs_kpp << " t = " << t << " xvalue[t]=" << x.values[t];
 
             if (!match_str(x.values[t], rp.gbrs_kpp))
                 return false;

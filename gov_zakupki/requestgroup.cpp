@@ -73,7 +73,7 @@ zakupki::contract_record* SingleRequest::getData()
 
 QString SingleRequest::extractParam1(QString &html, QString param, int startpos)
 {
-    qWarning() << "looking for param" << param;
+//    qWarning() << "looking for param" << param;
     int pos = startpos;
     pos = html.indexOf(param, pos);
 
@@ -82,10 +82,14 @@ QString SingleRequest::extractParam1(QString &html, QString param, int startpos)
         QString newlink = html.mid(newpos + 4, html.indexOf("</td>", newpos + 4)
                                    - newpos - 4);
 
-        qWarning() << "get newlink" << newlink;
-        return  newlink;
+//        qWarning() << "get newlink" << newlink;
+        return newlink;
     }
-    return QString("<font color=""red"">not found</font>");
+    if (zakupki::switcher_FILL_NOT_FOUND) {
+        return QString("not found");
+    } else {
+        return QString();
+    }
 }
 
 QString SingleRequest::extractParam2(QString &html, int &pos)
@@ -105,7 +109,7 @@ QString SingleRequest::extractParam2(QString &html, int &pos)
 
 void SingleRequest::parseZakupkiGeneralInfoPage(FileDownloader *loader)
 {
-    qDebug() << " ------------ Parsing data page! -----------------";
+    qWarning() << " ------------ Parsing data page! -----------------" << this->req.id;
 
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
     QString html = QString(filePool->extractDataAndFree(loader));
@@ -118,7 +122,6 @@ void SingleRequest::parseZakupkiGeneralInfoPage(FileDownloader *loader)
         QString newparam = extractParam1(html, zakupki::CC_FIELDS_KEYWORDS[i]);
         record->add_param(i, removeHtml(newparam));
     }
-
 
     int provider_pos = html.indexOf("Информация о поставщиках");
     int provider_title_pos = html.indexOf("tdHead", provider_pos + 1);
@@ -139,7 +142,7 @@ void SingleRequest::parseZakupkiGeneralInfoPage(FileDownloader *loader)
 
 void SingleRequest::parseZakupkiPurchaseInfo(FileDownloader *loader)
 {
-    qDebug() <<" ------------ Parsing purchase info page! -----------------";
+    qWarning() <<" ------------ Parsing purchase info page! -----------------" << this->req.id;
 
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
     QString html = QString(filePool->extractDataAndFree(loader));
@@ -156,7 +159,7 @@ void SingleRequest::parseZakupkiPurchaseInfo(FileDownloader *loader)
         html.indexOf("</td>", purchase_title_pos + 2) - purchase_title_pos - 4);
     purchase_name = removeHtml(purchase_name);
 
-    qWarning() << "GAYGAYGAY" << purchase_name;
+//    qWarning() << "GAYGAYGAY" << purchase_name;
 
     record->add_param(zakupki::CC_INDEX_PURCHASE_NAME,  purchase_name);
 
@@ -177,7 +180,7 @@ void SingleRequest::parseZakupkiPurchaseInfo(FileDownloader *loader)
 
 void SingleRequest::parseZakupkiDocumentsPage(FileDownloader *loader)
 {
-    qDebug() << "------------ Ищем документацию по закупке! ------------";
+    qDebug() << "------------ Ищем документацию по закупке! ------------" ;
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
     QString html = QString(filePool->extractDataAndFree(loader));
 
@@ -328,7 +331,7 @@ void SingleRequest::downloadEveryPage(QString url)
     QString purchaseInfoPage = url;
     purchaseInfoPage.replace("common-info", "payment-info-and-target-of-order");
     filePool->addDownload(purchaseInfoPage, this,
-                          SLOT(parseZakupkiPurchaseInfo(FileDownloader*)),
+                          SLOT(parseZakupkiPurchaseInfo(FileDownloader *)),
                           (void *)record);
 
     if (this->req.needFiles) {
@@ -406,8 +409,10 @@ void RequestGroup::acceptSingleRequest(SingleRequest *psingle)
 
     QMutableVectorIterator<SingleRequest *> it(single_reqs);
     while (it.hasNext()) {
-        if (it.next() == psingle)
+        if (it.next() == psingle) {
             it.remove();
+            break;
+        }
     }
 //    return puredata;
 
@@ -422,7 +427,7 @@ void RequestGroup::acceptSingleRequest(SingleRequest *psingle)
     }
 
     // do nothing
-    qWarning()  << "### TODO fix this";
+//    qWarning()  << "### TODO fix this";
 }
 
 QString FilterRequestParams::constructZakupkiUrl(int pagenum)
@@ -478,14 +483,22 @@ void exportGroupToExcel(Group &group, QString fullFilename)
 
     if (!group.isEmpty()) {
 
+        QXlsx::Format boldformat;
+        boldformat.setPatternBackgroundColor(QColor::fromRgb(210, 210, 210));
+        boldformat.setFontBold(true);
+
         zakupki::contract_record &curr_record = group[0];
         if (curr_record.rtype != zakupki::RT_ZAKUPKI) {
             for (size_t j = 0; j < zakupki::AG_FIELDS_HEADERS.size(); ++j) {
-                xlsx.write(numToLetter(j) + QString::number(1), zakupki::AG_FIELDS_HEADERS[j]);
+                QXlsx::RichString rich;
+                rich.addFragment(zakupki::AG_FIELDS_HEADERS[j], boldformat);
+                xlsx.write(numToLetter(j) + QString::number(1), rich);
             }
         } else {
             for (size_t j = 0; j < zakupki::CC_FIELDS_HEADERS.size(); ++j) {
-                xlsx.write(numToLetter(j) + QString::number(1), zakupki::CC_FIELDS_HEADERS[j]);
+                QXlsx::RichString rich;
+                rich.addFragment(zakupki::CC_FIELDS_HEADERS[j], boldformat);
+                xlsx.write(numToLetter(j) + QString::number(1), rich);
             }
         }
 

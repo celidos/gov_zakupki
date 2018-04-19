@@ -75,9 +75,9 @@ private:
 
 private slots:
     void process();
-    void searchButtonPressed();
+    void multipleSearchButtonPressed();
 
-    void filterSearchButtonPressed();
+    void zakupkiFilterSearchButtonPressed();
 
     void copyButtonClicked(int index);
 
@@ -93,15 +93,14 @@ private slots:
     void exportToExcelBudgetFilterButtonPressed();
     void exportToExcelZakupkiFilterButtonPressed();
 
+    void radioButtonFillNaPressed();
+
     // LIST SEARCH -------------------------------------------------------------
 public slots:
 
     void acceptSingleRequest  (RequestGroup *pgroup);
     void acceptMultipleRequest(RequestGroup *pgroup);
     void acceptFilterZakupkiRequest  (RequestGroup *pgroup);
-
-
-
     // f fast
 
 

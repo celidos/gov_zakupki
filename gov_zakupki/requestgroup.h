@@ -13,7 +13,10 @@
 #include "zakupki.h"
 #include "filedownloadspool.h"
 #include "reqdocumentmanager.h"
+
 #include "xlsxdocument.h"
+#include "xlsxformat.h"
+#include "xlsxrichstring.h"
 
 // struct REQUEST PARAMS -------------------------------------------------------
 

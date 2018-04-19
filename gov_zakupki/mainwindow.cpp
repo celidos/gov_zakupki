@@ -68,7 +68,7 @@ void MainWindow::configureUi()
     // -------------------------------------------------------------------------
 
     connect(ui->pushButton_4, SIGNAL(clicked(bool)),
-            this, SLOT(searchButtonPressed()));
+            this, SLOT(multipleSearchButtonPressed()));
 
     connect(ui->pushButton_6, SIGNAL(clicked()),
             this, SLOT(exportToExcelMultipleRequestButtonPressed()));
@@ -77,7 +77,7 @@ void MainWindow::configureUi()
             this, SLOT(clearTextEditButtonPressed()));
 
     connect(ui->pushButton_3, SIGNAL(clicked()),
-            this, SLOT(filterSearchButtonPressed()));
+            this, SLOT(zakupkiFilterSearchButtonPressed()));
 
     connect(ui->pushButton_8, SIGNAL(clicked()),
             this, SLOT(loadDatabaseButtonPressed()));
@@ -93,6 +93,13 @@ void MainWindow::configureUi()
 
     connect(ui->pushButton_2, SIGNAL(clicked()),
             this, SLOT(clearFilterZakupkiButtonPressed()));
+
+
+    connect(ui->radioButton, SIGNAL(toggled(bool)),
+            this, SLOT(radioButtonFillNaPressed()));
+    connect(ui->radioButton_2, SIGNAL(toggled(bool)),
+            this, SLOT(radioButtonFillNaPressed()));
+
 
     rpool->setProgressBar(ui->progressBar);
 
@@ -190,7 +197,7 @@ QStringList getNumberFromQString(const QString &xString)
     return res;
 }
 
-void MainWindow::searchButtonPressed()
+void MainWindow::multipleSearchButtonPressed()
 {
     QStringList req_set = getNumberFromQString(ui->plainTextEdit->toPlainText());
     ui->progressBar->setMinimum(0);
@@ -199,10 +206,12 @@ void MainWindow::searchButtonPressed()
     rpool->addGroup(req_set, this, SLOT(acceptMultipleRequest(RequestGroup*)));
 }
 
-void MainWindow::filterSearchButtonPressed()
+void MainWindow::zakupkiFilterSearchButtonPressed()
 {
     if (rp)
         delete rp;
+
+    lastzakupkigroup.clear();
 
     rp = new FilterRequestParams();
     rp->recordtype =zakupki::RT_ZAKUPKI;
@@ -222,8 +231,6 @@ void MainWindow::filterSearchButtonPressed()
 
     rp->minSum = ui->lineEdit_14->text().toLongLong();
     rp->maxSum = ui->lineEdit_13->text().toLongLong();
-
-    qWarning() << "POINTER: " << rp;
 
     rpool->addZakupkiFilterReq(rp, this, SLOT(acceptFilterZakupkiRequest(RequestGroup*)));
 }
@@ -349,6 +356,16 @@ void MainWindow::exportToExcelBudgetFilterButtonPressed()
 void MainWindow::exportToExcelZakupkiFilterButtonPressed()
 {
     exportGroupToExcel(lastzakupkigroup, ui->lineEdit_15->text() + ".xlsx");
+}
+
+void MainWindow::radioButtonFillNaPressed()
+{
+    qWarning() << "Lol!";
+    if (ui->radioButton->isChecked()) {
+        zakupki::switcher_FILL_NOT_FOUND = true;
+    } else {
+        zakupki::switcher_FILL_NOT_FOUND = false;
+    }
 }
 
 void MainWindow::process()
