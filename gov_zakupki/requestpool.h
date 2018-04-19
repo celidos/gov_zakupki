@@ -35,12 +35,12 @@ public:
     void setProgressBar(QProgressBar *pbar);
     void setDocManager(ReqDocumentManager *docmanager);
     void addSingleReq(QString req,  QObject *obj, const char *slot,
-                      bool needFiles, void *info = nullptr);
+                      bool needFiles=false, bool needTransferInfo=false, void *info = nullptr);
     void addGroup(QStringList &reqs, QObject *obj, const char *slot,
-                  bool needFiles=false, void *info = nullptr);
+                  bool needFiles=false, bool needTransferInfo=false, void *info = nullptr);
     void addGroup(RequestGroup &group, QObject *obj, const char *slot, void *info = nullptr);
 
-    void addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj, const char *slot, void *info = nullptr);
+    void addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj, const char *slot);
 
     QVector<int> addBudgetFilter(FilterRequestParams &rp);
 
@@ -63,8 +63,11 @@ private:
 
     QVector<RequestGroup *> rpool;
 
-    QObject *filterreq_lastobj;
-    const char *filterreq_lastslot;
+    // zakupki
+
+    QObject *filterzakupki_lastobj;
+    const char *filterzakupki_lastslot;
+    QStringList last_zakupki_ids;
 
     QVector<int> last_budgetFilter;
 
@@ -73,10 +76,20 @@ private:
 
     void getLastUpdateDate(); /// ### not working, todo
 
+    // budget
+
     int budgetDbAcceptedPagesCount;
     int budgetDbSubmittedPagesCount;
     int budgetDbMaxPagesCount;
     bool budgetDbReady;
+
+    // zakupki
+
+//
+//    QObject *filterzakupki_lastobj;
+//    const char *filterzakupki_lastslot;
+
+    // not used
 
     int zakupkiOrgDbAcceptedPagesCount;
     int zakupkiOrgDbSubmittedPagesCount;
@@ -87,7 +100,7 @@ private slots:
     void acceptProgress();
 
     void acceptCustomerInn(FileDownloader *ploader);
-    void acceptFilterSearchResults(FileDownloader *ploader);
+    void acceptZakupkiFilterSearchResults(FileDownloader *ploader);
 
     void acceptBudgetDbInitPage(FileDownloader *ploader);
     void acceptBudgetDbPartialData(FileDownloader *ploader);

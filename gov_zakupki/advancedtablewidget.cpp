@@ -14,40 +14,40 @@ AdvancedTableWidget::~AdvancedTableWidget()
 void AdvancedTableWidget::configure(size_t max_fields,
                                     QString btn_text, QObject *obj, const char *slot)
 {
-    btntext = btn_text;
-    custom_slot = slot;
-    custom_object = obj;
+        btntext = btn_text;
+        custom_slot = slot;
+        custom_object = obj;
 
-    setEditTriggers(QAbstractItemView::NoEditTriggers);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    setColumnCount(2);
-    setColumnWidth(0, int(this->width() * 0.6));
+        setEditTriggers(QAbstractItemView::NoEditTriggers);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        setColumnCount(2);
+        setColumnWidth(0, int(this->width() * 0.6));
 
-    size_t fields_indexes[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+        size_t fields_indexes[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 
-    // item delegate for possible html in cells
-//    setItemDelegate(new HtmlDelegate(this, Qt::AlignLeft));
-//    setEditTriggers(QAbstractItemView::DoubleClicked |
-//                    QAbstractItemView::SelectedClicked);
-//    setSelectionBehavior(QAbstractItemView::SelectRows);
+    //    item delegate for possible html in cells
+    //    setItemDelegate(new HtmlDelegate(this, Qt::AlignLeft));
+    //    setEditTriggers(QAbstractItemView::DoubleClicked |
+    //                    QAbstractItemView::SelectedClicked);
+    //    setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    // start filling table
-    for (size_t i = 0; i < max_fields; ++i) {
-        // add buttons
-        QWidget* pWidget = new QWidget(this);
-        MultipleButton* btn_edit = new MultipleButton(fields_indexes[i], pWidget);
-        btn_edit->setText(btntext);
-        QHBoxLayout* pLayout = new QHBoxLayout(pWidget);
-        pLayout->addWidget(btn_edit);
-        pLayout->setAlignment(Qt::AlignCenter);
-        pLayout->setContentsMargins(0, 0, 0, 0);
-        pWidget->setLayout(pLayout);
-        pWidget->setVisible(false);
-        button_widgets.append(pWidget);
-        connect(btn_edit, SIGNAL(clicked(int)), obj, slot);
+        // start filling table
+        for (size_t i = 0; i < max_fields; ++i) {
+            // add buttons
+            QWidget* pWidget = new QWidget(this);
+            MultipleButton* btn_edit = new MultipleButton(fields_indexes[i], pWidget);
+            btn_edit->setText(btntext);
+            QHBoxLayout* pLayout = new QHBoxLayout(pWidget);
+            pLayout->addWidget(btn_edit);
+            pLayout->setAlignment(Qt::AlignCenter);
+            pLayout->setContentsMargins(0, 0, 0, 0);
+            pWidget->setLayout(pLayout);
+            pWidget->setVisible(false);
+            button_widgets.append(pWidget);
+            connect(btn_edit, SIGNAL(clicked(int)), obj, slot);
 
-        tableitems_widgets.append(new QTableWidgetItem());
-    }
+            tableitems_widgets.append(new QTableWidgetItem());
+        }
 }
 
 void AdvancedTableWidget::configureForZakupki(QObject *obj, const char *slot)

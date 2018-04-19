@@ -22,14 +22,17 @@ struct RequestParams {
     QString id;
     QString customer_inn;
     bool needFiles;
+    bool needTransferDetails;
     ReqDocumentManager *docmanager;
 
-    RequestParams(QString req, bool needfiles=false,
+    RequestParams(QString req, bool needfiles=false, bool needTransferInfo=false,
                   ReqDocumentManager *_docmanager=nullptr) {
         this->id = req;
         this->customer_inn = QString();
         this->needFiles = needfiles;
+        this->needTransferDetails = needTransferInfo;
         this->docmanager = _docmanager;
+
     }
     RequestParams() {}
 };
@@ -55,8 +58,8 @@ struct FilterRequestParams {
     QDate dateStart;
     QDate dateFinish;
 
-    long double maxSum;
-    long double minSum;
+    double maxSum;
+    double minSum;
 
     OrganizationInfo orginfo;
 
@@ -65,6 +68,8 @@ struct FilterRequestParams {
 
     FilterRequestParams() {}
     ~FilterRequestParams() {}
+
+    QString constructZakupkiUrl(int pagenum);
 };
 
 // SINGLE REQUEST --------------------------------------------------------------
@@ -114,9 +119,11 @@ class RequestGroup : public QObject
 
 public:
     explicit RequestGroup(QString singleReq, QObject *obj, const char *slot,
-                          bool needFiles=false, ReqDocumentManager *docmanager=nullptr, QObject *parent=0);
+                          bool needFiles=false, bool needTransferInfo=false,
+                          ReqDocumentManager *docmanager=nullptr, QObject *parent=0);
     explicit RequestGroup(QStringList &reqs, QObject *obj, const char *slot,
-                          bool needFiles=false, ReqDocumentManager *docmanager=nullptr, QObject *parent=0);
+                          bool needFiles=false, bool needTransferInfo=false,
+                          ReqDocumentManager *docmanager=nullptr, QObject *parent=0);
 //    explicit RequestGroup(const RequestGroup& copy) = default;
 
     virtual ~RequestGroup();
@@ -147,6 +154,6 @@ signals:
     void gotElement();
 };
 
-void updateRecordWithJson(zakupki::contract_record *record, QJsonObject &mainobj);
+void updateRecordGeneralInfoWithJson(zakupki::contract_record *record, QJsonObject &mainobj);
 
 #endif // REQUESTGROUP_H

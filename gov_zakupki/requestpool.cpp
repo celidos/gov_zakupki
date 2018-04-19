@@ -32,7 +32,7 @@ void RequestPool::setDocManager(ReqDocumentManager *docmanager)
 }
 
 void RequestPool::addSingleReq(QString req, QObject *obj, const char *slot,
-                               bool needFiles, void *info)
+                               bool needFiles, bool needTransferInfo, void *info)
 {
     qWarning() << "LOLKEK";
     QStringList reqs(req);
@@ -40,10 +40,10 @@ void RequestPool::addSingleReq(QString req, QObject *obj, const char *slot,
 }
 
 void RequestPool::addGroup(QStringList &reqs, QObject *obj, const char *slot,
-                           bool needFiles, void *info)
+                           bool needFiles, bool needTransferInfo, void *info)
 {
     qWarning() << "Adding new rgroup...";
-    RequestGroup *group = new RequestGroup(reqs, obj, slot, needFiles, docmanager, this);
+    RequestGroup *group = new RequestGroup(reqs, obj, slot, needFiles, needTransferInfo, docmanager, this);
     rpool.append(group);
     connect(group, SIGNAL(ready(RequestGroup*)), obj, slot);
 
@@ -58,16 +58,14 @@ void RequestPool::addGroup(QStringList &reqs, QObject *obj, const char *slot,
 
 
 void RequestPool::addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj,
-                               const char *slot, void *info)
+                               const char *slot)
 {
-    filterreq_lastobj = obj;
-    filterreq_lastslot = slot;
+    filterzakupki_lastobj = obj;
+    filterzakupki_lastslot = slot;
     rp->customer_inn = rp->customer_inn.trimmed();
     if (!rp->customer_inn.isEmpty()) {
         // looking for certain customer inn
         // let's know organization name firstly
-
-
 
         QString customer_inn_url = QString("http://zakupki.gov.ru/epz/")
             + "organization/chooseOrganization/chooseOrganizationTable.html?"
@@ -191,18 +189,29 @@ Group RequestPool::extractDataAndFree(RequestGroup *pgroup)
 void RequestPool::exportToExcelBudgetFilter(QString filename)
 {
     qWarning() << "Exporting budget filter to excel!";
-    QXlsx::Document xlsx;
-    for (size_t i = 0; i < last_budgetFilter.size(); ++i) {
-        zakupki::contract_record &curr_record = budget_db[last_budgetFilter[i]];
 
-        for (size_t j = 0; j < curr_record.values.size(); ++j) {
-            int column_index = curr_record.indices[j];
-            xlsx.write(numToLetter(column_index) + QString::number(i + 1), curr_record.values[j]);
+    if (!last_budgetFilter.isEmpty()) {
+
+        QXlsx::Document xlsx;
+
+        for (size_t j = 0; j < zakupki::AG_FIELDS_HEADERS.size(); ++j) {
+            xlsx.write(numToLetter(j) + QString::number(1), zakupki::AG_FIELDS_HEADERS[j]);
         }
-    }
 
-    xlsx.saveAs(filename + ".xlsx");
-    qWarning() << "Export done!";
+        for (size_t i = 0; i < last_budgetFilter.size(); ++i) {
+            zakupki::contract_record &curr_record = budget_db[last_budgetFilter[i]];
+
+            for (size_t j = 0; j < curr_record.values.size(); ++j) {
+                int column_index = curr_record.indices[j];
+                xlsx.write(numToLetter(column_index) + QString::number(i + 2), curr_record.values[j]);
+            }
+        }
+
+        xlsx.saveAs(filename + ".xlsx");
+        qWarning() << "Export done!";
+    } else {
+        failwith("Пустая таблица.");
+    }
 }
 
 void RequestPool::updateBudgetDatabase()
@@ -344,48 +353,47 @@ OrganizationInfo getGoodOrganizationName(QString &html)
     return orginfo;
 }
 
+
 void RequestPool::acceptCustomerInn(FileDownloader *ploader)
 {
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
-    FilterRequestParams *rp = (FilterRequestParams *)ploader->info;
-    QString html = QString(filePool->extractDataAndFree(ploader));
 
+    FilterRequestParams *rp = (FilterRequestParams *)ploader->info;
+    ploader->info = nullptr;
+
+    qWarning() << "debug#1:" << rp->customer_inn;
+
+    QString html = QString(filePool->extractDataAndFree(ploader));
 
     rp->orginfo = getGoodOrganizationName(html);
 
+    qWarning() << "debug#2:" << rp->customer_inn;
+
     rp->page_num = 1;
-    QString new_url = QString("http://zakupki.gov.ru/epz/contract/extendedsearch/")
-            + "results.html?morphology=on&openMode=USE_DEFAULT_PARAMS"
-            + "&pageNumber=1&sortDirection=false&recordsPerPage=_100"
-            + "&sortBy=PO_DATE_OBNOVLENIJA&fz44=on"
-            + "&priceFrom=0"
-            + "&priceTo=200000000000"
-            + "&advancePercentFrom=hint"
-            + "&advancePercentTo=hint"
-            + "&contractStageList_0=on"
-            + "&contractStageList_1=on"
-            + "&contractStageList_2=on"
-            + "&contractStageList_3=on"
-            + "&contractStageList=0%2C1%2C2%2C3"
-            + "&customerTitle=" + QUrl::toPercentEncoding(rp->orginfo.fullname)
-            + "&customerCode=" + rp->orginfo.cpz
-            + "&customerFz94id=" + rp->orginfo.fz94id
-            + "&customerInn=" + rp->orginfo.inn;
+
+    QString new_url = rp->constructZakupkiUrl(1); //constructZakupkiUrl(rp, 1);
 
     qWarning() << "we got url :\n\n" << new_url;
 
-    filePool->addDownload(new_url, this, SLOT(acceptFilterSearchResults(FileDownloader*)),
+    qWarning() << "pointer: "<< rp;
+
+    filePool->addDownload(new_url, this, SLOT(acceptZakupkiFilterSearchResults(FileDownloader*)),
                           (void*)rp);
     //    qWarning() << html;
 }
 
-void RequestPool::acceptFilterSearchResults(FileDownloader *ploader)
+void RequestPool::acceptZakupkiFilterSearchResults(FileDownloader *ploader)
 {
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
+
+    FilterRequestParams *rp = (FilterRequestParams *)ploader->info;
+
     QString html = QString(filePool->extractDataAndFree(ploader));
 
+    qWarning() << "We accepted Filter Search Results!";
+
     QVector<int> positions;
-    QStringList IDs;
+//    QStringList IDs;
     int pos = 0;
     while (pos >= 0) {
         pos = html.indexOf("descriptTenderTd", pos + 1);
@@ -396,43 +404,34 @@ void RequestPool::acceptFilterSearchResults(FileDownloader *ploader)
     for (auto &it : positions) {
         int newpos = html.indexOf("<a href=", it);
         QString newid = html.mid(newpos, html.indexOf("</a>", newpos + 6) - newpos);
-        IDs << removeHtml(newid).mid(2);
+        qWarning() << " * * * " << removeHtml(newid).mid(2);
+        last_zakupki_ids << removeHtml(newid).mid(2);
+//        IDs << removeHtml(newid).mid(2);
     }
 
-    FilterRequestParams *rp = (FilterRequestParams *)ploader->info;
+    qWarning() << "ok!" << rp;
     ++rp->page_num;
-    if (!positions.isEmpty() && rp->page_num < 10) {
-        QString new_url = QString("http://zakupki.gov.ru/epz/contract/extendedsearch/")
-                + "results.html?morphology=on&openMode=USE_DEFAULT_PARAMS"
-                + "&pageNumber=" + QString::number(rp->page_num)
-                + "&sortDirection=false&recordsPerPage=_100"
-                + "&sortBy=PO_DATE_OBNOVLENIJA&fz44=on"
-                + "&priceFrom=0"
-                + "&priceTo=200000000000"
-                + "&advancePercentFrom=hint"
-                + "&advancePercentTo=hint"
-                + "&contractStageList_0=on"
-                + "&contractStageList_1=on"
-                + "&contractStageList_2=on"
-                + "&contractStageList_3=on"
-                + "&contractStageList=0%2C1%2C2%2C3"
-                + "&customerTitle=" + QUrl::toPercentEncoding(rp->orginfo.fullname)
-                + "&customerCode=" + rp->orginfo.cpz
-                + "&customerFz94id=" + rp->orginfo.fz94id
-                + "&customerInn=" + rp->orginfo.inn;
+    qWarning() << "ok2!";
+    if (!positions.isEmpty() && rp->page_num < ZAKUPKI_MAX_PAGES_WITH_100_PER_PAGE) {
+
+        // UPGRADE
+
+        QString new_url = rp->constructZakupkiUrl(rp->page_num);
 
         qWarning() << "we got url :\n\n" << new_url;
 
-        filePool->addDownload(new_url, this, SLOT(acceptFilterSearchResults(FileDownloader*)),
+        filePool->addDownload(new_url, this, SLOT(acceptZakupkiFilterSearchResults(FileDownloader*)),
                               (void*)rp);
+    } else {
+        addGroup(last_zakupki_ids, filterzakupki_lastobj, filterzakupki_lastslot);
     }
 
     qWarning() << "Найденные ссылки:";
-    for (auto &it : IDs) {
+    for (auto &it : last_zakupki_ids) {
         qWarning() << "* " << it;
     }
 
-    addGroup(IDs, filterreq_lastobj, filterreq_lastslot);
+//    addGroup(IDs, filterreq_lastobj, filterreq_lastslot);
 }
 
 void RequestPool::acceptBudgetDbInitPage(FileDownloader *ploader)
@@ -484,7 +483,7 @@ void RequestPool::acceptBudgetDbPartialData(FileDownloader *ploader)
     foreach (QJsonValue objvalue, data) {
         QJsonObject obj = objvalue.toObject();
         budget_db.append(zakupki::contract_record());
-        updateRecordWithJson(&budget_db.back(), obj);
+        updateRecordGeneralInfoWithJson(&budget_db.back(), obj);
         QString fullstr = "";
         for (auto &it : budget_db.back().values)
             fullstr += "; " + it;

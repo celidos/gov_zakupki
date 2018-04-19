@@ -65,6 +65,7 @@ private:
     void downloadData();
 
     void configureUi();
+        void configureTransferInfoTable();
 
     Group lastgroup;
 

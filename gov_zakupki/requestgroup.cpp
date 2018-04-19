@@ -42,11 +42,18 @@ void SingleRequest::activate()
         if (strreq.length() == zakupki::AG_REQ_SHORT_LEN) {
             this->record->rtype = zakupki::RT_BUDGET;
             qDebug() << "Добавляем задачу budget - скачивания!";
-            filePool->addDownload(QString("http://budget.gov.ru/epbs/registry/grants/")
-                + "data?pageNum=1&pageSize=5&filterchangenumstart="
-                + QUrl::toPercentEncoding(strreq)
-                + "___&sortField=renewdate&sortDir=desc&blocks=doc_0_1000,info,"
-                + "grbs,rcv,change",
+
+            QString full_url = QString("http://budget.gov.ru/epbs/registry/grants/")
+                    + "data?pageNum=1&pageSize=5&filterchangenumstart="
+                    + QUrl::toPercentEncoding(strreq)
+                    + "___&sortField=renewdate&sortDir=desc&blocks=doc_0_1000,info,"
+                    + "grbs,rcv,change";
+
+            if (req.needTransferDetails){
+                full_url += ",payment";
+            }
+
+            filePool->addDownload(full_url,
                 this, SLOT(parseBudgetData(FileDownloader *)));
         } else {
             qWarning()  << "Incorrect request.";
@@ -103,10 +110,15 @@ void SingleRequest::parseZakupkiGeneralInfoPage(FileDownloader *loader)
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
     QString html = QString(filePool->extractDataAndFree(loader));
 
-    for (size_t i = 0; i < zakupki::CC_MAX_AUTOMATED_FIELDS; ++i) {
+    record->add_param(zakupki::CC_INDEX_UID, req.id);
+
+    qWarning() << "$$$ here";
+
+    for (size_t i = 1; i < zakupki::CC_MAX_AUTOMATED_FIELDS; ++i) {
         QString newparam = extractParam1(html, zakupki::CC_FIELDS_KEYWORDS[i]);
         record->add_param(i, removeHtml(newparam));
     }
+
 
     int provider_pos = html.indexOf("Информация о поставщиках");
     int provider_title_pos = html.indexOf("tdHead", provider_pos + 1);
@@ -225,11 +237,12 @@ void SingleRequest::parseZakupkiDocumentsPage(FileDownloader *loader)
         req.docmanager->downloadAll();
 }
 
-void updateRecordWithJson(zakupki::contract_record *record, QJsonObject &mainobj) {
+void updateRecordGeneralInfoWithJson(zakupki::contract_record *record, QJsonObject &mainobj) {
     QJsonObject info = mainobj["info"].toObject();
     QJsonObject grbs = mainobj["grbs"].toObject();
     QJsonObject receiver = mainobj["receiver"].toArray().takeAt(0).toObject();
 
+    record->add_param(zakupki::AG_INDEX_UID, info["regNum"].toString());
     record->add_param(zakupki::AG_INDEX_NUM_AGREEM, info["numAgreem"].toString());
     record->add_param(zakupki::AG_INDEX_DATE_AGREEM, info["dateAgreem"].toString());
     record->add_param(zakupki::AG_INDEX_CURRENCY_SUM, info["currencySum"].toString());
@@ -243,6 +256,18 @@ void updateRecordWithJson(zakupki::contract_record *record, QJsonObject &mainobj
     record->add_param(zakupki::AG_INDEX_GRBS_DEPOSIT_NUMBER, grbs["grbsAccount"].toString());
     record->add_param(zakupki::AG_INDEX_RECEIVER_INN, receiver["inn"].toString());
     record->add_param(zakupki::AG_INDEX_RECEIVER_KPP, receiver["kpp"].toString());
+}
+
+void updateRecordTransferInfoWithJson(zakupki::contract_record *record, QJsonObject &mainobj) {
+    QJsonArray pay = mainobj["payments"].toArray();
+    foreach (const QJsonValue & value, pay) {
+        QJsonObject obj = value.toObject();
+        record->ag_transfer_date.append(QDateTime::fromString(obj["date"].toString(), "yyyyMMdd").
+                toString("dd.MM.yyyy"));
+
+        record->ag_transfer_num.append(obj["num"].toString().toLongLong());
+        record->ag_transfer_sum.append(obj["sum"].toString().toLongLong());
+    }
 }
 
 void SingleRequest::parseBudgetData(FileDownloader *loader)
@@ -259,7 +284,13 @@ void SingleRequest::parseBudgetData(FileDownloader *loader)
     QJsonObject mainobj = data.takeAt(0).toObject();
     QJsonArray docs = mainobj["documents"].toArray();
 
-    updateRecordWithJson(record, mainobj);
+    record->add_param(zakupki::AG_INDEX_UID, req.id);
+
+    updateRecordGeneralInfoWithJson(record, mainobj);
+
+    if (req.needTransferDetails) {
+        updateRecordTransferInfoWithJson(record, mainobj);
+    }
 
     foreach (const QJsonValue & value, docs) {
         QJsonObject newobj = value.toObject();
@@ -270,6 +301,8 @@ void SingleRequest::parseBudgetData(FileDownloader *loader)
 //    if (ui->checkBox->isChecked())
         req.docmanager->downloadAll();
     checkReady();
+
+    qWarning() << "end!";
 }
 
 void SingleRequest::checkReady()
@@ -310,22 +343,22 @@ void SingleRequest::downloadEveryPage(QString url)
 // REQUEST GROUP ---------------------------------------------------------------
 
 RequestGroup::RequestGroup(QString singleReq, QObject *obj, const char *slot,
-                           bool needFiles, ReqDocumentManager *docmanager,
+                           bool needFiles, bool needTransferInfo, ReqDocumentManager *docmanager,
                            QObject *parent):
     QObject(parent), responseObject(obj), responseSlot(slot),
     activatedReqs(0), acceptedReqs(0), totalReqs(0)
 {
-    requests_params.append(RequestParams(singleReq, needFiles, docmanager));
+    requests_params.append(RequestParams(singleReq, needFiles, needTransferInfo, docmanager));
 }
 
 RequestGroup::RequestGroup(QStringList &reqs, QObject *obj, const char *slot,
-                           bool needFiles, ReqDocumentManager *docmanager,
+                           bool needFiles, bool needTransferInfo, ReqDocumentManager *docmanager,
                            QObject *parent):
     QObject(parent), responseObject(obj), responseSlot(slot),
     activatedReqs(0), acceptedReqs(0), totalReqs(0)
 {
     for (auto &it : reqs) {
-        requests_params.append(RequestParams(it, needFiles, docmanager));
+        requests_params.append(RequestParams(it, needFiles, needTransferInfo, docmanager));
     }
 }
 
@@ -388,4 +421,41 @@ void RequestGroup::acceptSingleRequest(SingleRequest *psingle)
 
     // do nothing
     qWarning()  << "### TODO fix this";
+}
+
+QString FilterRequestParams::constructZakupkiUrl(int pagenum)
+{
+    FilterRequestParams *rp = this;
+    QString new_url = QString("http://zakupki.gov.ru/epz/contract/extendedsearch/")
+            + "results.html?morphology=on&openMode=USE_DEFAULT_PARAMS"
+            + "&pageNumber=" + QString::number(pagenum)
+            + "&sortDirection=false&recordsPerPage=_100"
+            + "&sortBy=PO_DATE_OBNOVLENIJA&fz44=on"
+            + "&priceFrom=" + QString::number(rp->minSum)
+            + "&priceTo=" + QString::number(rp->maxSum)
+            + "&advancePercentFrom=hint"
+            + "&advancePercentTo=hint"
+            + "&contractStageList_0=on"
+            + "&contractStageList_1=on"
+            + "&contractStageList_2=on"
+            + "&contractStageList_3=on"
+            + "&contractStageList=0%2C1%2C2%2C3"
+            + "&customerTitle=" + QUrl::toPercentEncoding(rp->orginfo.fullname)
+            + "&customerCode=" + rp->orginfo.cpz
+            + "&customerFz94id=" + rp->orginfo.fz94id
+            + "&customerInn=" + rp->orginfo.inn;
+
+    if (rp->dateStartUsed) {
+        new_url += "&contractDateFrom=" + rp->dateStart.toString("dd.MM.yyyy");
+    }
+
+    if (rp->dateFinishUsed) {
+        new_url += "&contractDateTo=" + rp->dateFinish.toString("dd.MM.yyyy");
+    }
+
+    if (!rp->gbrs_inn.isEmpty()) {
+        new_url += "&supplierTitle=" + rp->gbrs_inn;
+    }
+
+    return new_url;
 }

@@ -90,6 +90,31 @@ void MainWindow::configureUi()
             this, SLOT(exportToExcelBudgetFilterButtonPressed()));
 
     rpool->setProgressBar(ui->progressBar);
+
+    // -------------------------------------------------------------------------
+
+    configureTransferInfoTable();
+}
+
+void MainWindow::configureTransferInfoTable()
+{
+    ui->tableWidget->clear();
+
+    ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    ui->tableWidget->setColumnCount(3);
+//    setColumnWidth(0, int(this->width() * 0.6));
+
+    ui->tableWidget->setRowCount(1);
+
+    ui->tableWidget->setHorizontalHeaderLabels(zakupki::TRANSFER_INFO_COLUMNS_HEADERS);
+    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
+
+//    for (size_t i = 0; i < zakupki::AG_MAX_FIELDS; ++i) {
+//        setCellWidget(i, 1, button_widgets[i]);
+//        button_widgets[i]->setVisible(true);
+//        setItem(i, 0, tableitems_widgets[i]);
+//    }
 }
 
 // processing data -------------------------------------------------------------
@@ -171,12 +196,27 @@ void MainWindow::searchButtonPressed()
 
 void MainWindow::filterSearchButtonPressed()
 {
-
     FilterRequestParams *rp = new FilterRequestParams();
-    rp->customer_inn = ui->lineEdit_4->text();
+    rp->customer_inn = ui->lineEdit_4->text().trimmed();
+    rp->gbrs_inn = ui->lineEdit_9->text().trimmed();
+    rp->gbrs_kpp = ui->lineEdit_12->text().trimmed();
+
+    rp->dateStartUsed  = ui->checkBox_7->isChecked();
+    if (rp->dateStartUsed) {
+        rp->dateStart = ui->dateEdit_5->date();
+    }
+
+    rp->dateFinishUsed = ui->checkBox_6->isChecked();
+    if (rp->dateFinishUsed) {
+        rp->dateFinish = ui->dateEdit_6->date();
+    }
+
+    rp->minSum = ui->lineEdit_14->text().toLongLong();
+    rp->maxSum = ui->lineEdit_13->text().toLongLong();
+
+    qWarning() << "POINTER: " << rp;
 
     rpool->addZakupkiFilterReq(rp, this, SLOT(acceptMultipleRequest(RequestGroup*)));
-
 }
 
 void MainWindow::clearTextEditButtonPressed()
@@ -184,8 +224,11 @@ void MainWindow::clearTextEditButtonPressed()
     ui->plainTextEdit->clear();
 }
 
+
+
 void MainWindow::acceptSingleRequest(RequestGroup *pgroup)
 {
+    qWarning() << "ACCEPTING SINGLE REQUEST!";
     Group data = rpool->extractDataAndFree(pgroup);
     zakupki::contract_record record = data[0];
 
@@ -193,6 +236,43 @@ void MainWindow::acceptSingleRequest(RequestGroup *pgroup)
         infotable->configureForZakupki(this, SLOT(copyButtonClicked(int)));
     } else if (record.rtype == zakupki::RT_BUDGET) {
         infotable->configureForBudget(this, SLOT(copyButtonClicked(int)));
+
+        if (!record.ag_transfer_num.isEmpty()) {
+
+            ui->tableWidget->clear();
+
+            QTableWidget *tw = ui->tableWidget;
+
+            for (int i = 0; i < record.ag_transfer_num.size(); ++i) {
+                QString newtext;
+
+                ui->tableWidget->insertRow(i);
+
+                newtext = QString::number(record.ag_transfer_num[i]);
+                QTableWidgetItem *pitem1(tw->item(0, i));
+                if (pitem1) {
+                    pitem1->setText(newtext);
+                } else {
+                    tw->setItem(0, i, new QTableWidgetItem(newtext));
+                }
+
+                newtext = record.ag_transfer_date[i];
+                QTableWidgetItem *pitem2(tw->item(1, i));
+                if (pitem2) {
+                    pitem2->setText(newtext);
+                } else {
+                    tw->setItem(1, i, new QTableWidgetItem(newtext));
+                }
+
+                newtext = QString::number(record.ag_transfer_sum[i]);
+                QTableWidgetItem *pitem3(tw->item(2, i));
+                if (pitem3) {
+                    pitem3->setText(newtext);
+                } else {
+                    tw->setItem(2, i, new QTableWidgetItem(newtext));
+                }
+            }
+        }
     }
 
     for (size_t i = 0; i < record.values.length(); ++i) {
@@ -227,7 +307,7 @@ void MainWindow::exportToExcelMultipleRequestButtonPressed()
     if (!lastgroup.isEmpty()) {
 
         zakupki::contract_record &curr_record = lastgroup[0];
-        if (curr_record.rtype == zakupki::RT_ZAKUPKI) {
+        if (curr_record.rtype != zakupki::RT_ZAKUPKI) {
             for (size_t j = 0; j < zakupki::AG_FIELDS_HEADERS.size(); ++j) {
                 xlsx.write(numToLetter(j) + QString::number(1), zakupki::AG_FIELDS_HEADERS[j]);
             }
@@ -262,8 +342,10 @@ void MainWindow::process()
     docmanager->current_rec.remove(QRegExp(
         QString::fromUtf8("[\\s-`~!@#$%^&*()_—+=|:;<>«»?/{}\'\"\\\[\\\]\\\\]")));
 
+    ui->tableWidget->clear();
+
     rpool->addSingleReq(docmanager->current_rec, this,
                         SLOT(acceptSingleRequest(RequestGroup*)),
-                        ui->checkBox->isChecked());
+                        ui->checkBox->isChecked(), ui->checkBox_2->isChecked());
 }
 
