@@ -67,7 +67,11 @@ private:
     void configureUi();
         void configureTransferInfoTable();
 
-    Group lastgroup;
+    void postFilterZakupki(FilterRequestParams *rp);
+
+    Group lastmultiplegroup;
+    Group lastzakupkigroup;
+    FilterRequestParams *rp;
 
 private slots:
     void process();
@@ -77,24 +81,24 @@ private slots:
 
     void copyButtonClicked(int index);
 
-
     // f fast
     void clearTextEditButtonPressed();
+    void clearFilterZakupkiButtonPressed();
 
     void refreshDataBase();
     void loadDatabaseButtonPressed();
     void budgetFilterSearchButtonPressed();
 
-    void loadOrganizationsNamesButtonPressed();
     void exportToExcelMultipleRequestButtonPressed();
     void exportToExcelBudgetFilterButtonPressed();
+    void exportToExcelZakupkiFilterButtonPressed();
 
     // LIST SEARCH -------------------------------------------------------------
 public slots:
 
     void acceptSingleRequest  (RequestGroup *pgroup);
     void acceptMultipleRequest(RequestGroup *pgroup);
-    void acceptFilterRequest  (RequestGroup *pgroup);
+    void acceptFilterZakupkiRequest  (RequestGroup *pgroup);
 
 
 

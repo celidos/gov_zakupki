@@ -13,10 +13,13 @@
 #include "zakupki.h"
 #include "filedownloadspool.h"
 #include "reqdocumentmanager.h"
+#include "xlsxdocument.h"
 
 // struct REQUEST PARAMS -------------------------------------------------------
 
 typedef QVector<zakupki::contract_record> Group;
+
+void exportGroupToExcel(Group &group, QString fullFilename);
 
 struct RequestParams {
     QString id;
@@ -133,6 +136,8 @@ public:
 
     Group *getData();
 
+    FilterRequestParams *rp;
+
 private:
     QVector<RequestParams> requests_params;
     QVector<SingleRequest *> single_reqs;
@@ -154,6 +159,7 @@ signals:
     void gotElement();
 };
 
+QString numToLetter(int x);
 void updateRecordGeneralInfoWithJson(zakupki::contract_record *record, QJsonObject &mainobj);
 
 #endif // REQUESTGROUP_H

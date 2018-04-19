@@ -63,6 +63,8 @@ void MainWindow::configureUi()
     //pwDownloadFilesProgressBar->setText("Проверка интернет-соединения...");
     ui->statusBar->addWidget(pwDownloadFilesProgressBar);
 
+//    ui->scrollArea->setWidget(ui->widget);
+
     // -------------------------------------------------------------------------
 
     connect(ui->pushButton_4, SIGNAL(clicked(bool)),
@@ -83,11 +85,14 @@ void MainWindow::configureUi()
     connect(ui->pushButton_9, SIGNAL(clicked()),
             this, SLOT(budgetFilterSearchButtonPressed()));
 
-    connect(ui->pushButton_10, SIGNAL(clicked()),
-            this, SLOT(loadOrganizationsNamesButtonPressed()));
-
     connect(ui->pushButton_11, SIGNAL(clicked()),
             this, SLOT(exportToExcelBudgetFilterButtonPressed()));
+
+    connect(ui->pushButton_7, SIGNAL(clicked()),
+            this, SLOT(exportToExcelZakupkiFilterButtonPressed()));
+
+    connect(ui->pushButton_2, SIGNAL(clicked()),
+            this, SLOT(clearFilterZakupkiButtonPressed()));
 
     rpool->setProgressBar(ui->progressBar);
 
@@ -114,7 +119,12 @@ void MainWindow::configureTransferInfoTable()
 //        setCellWidget(i, 1, button_widgets[i]);
 //        button_widgets[i]->setVisible(true);
 //        setItem(i, 0, tableitems_widgets[i]);
-//    }
+    //    }
+}
+
+void MainWindow::postFilterZakupki(FilterRequestParams *rp)
+{
+
 }
 
 // processing data -------------------------------------------------------------
@@ -167,11 +177,6 @@ void MainWindow::budgetFilterSearchButtonPressed()
     }
 }
 
-void MainWindow::loadOrganizationsNamesButtonPressed()
-{
-    rpool->loadOrganizationsFromZakupki();
-}
-
 QStringList getNumberFromQString(const QString &xString)
 {
     QRegExp xRegExp("(-?\\d+(?:[\\.,]\\d+(?:e\\d+)?)?)");
@@ -196,7 +201,11 @@ void MainWindow::searchButtonPressed()
 
 void MainWindow::filterSearchButtonPressed()
 {
-    FilterRequestParams *rp = new FilterRequestParams();
+    if (rp)
+        delete rp;
+
+    rp = new FilterRequestParams();
+    rp->recordtype =zakupki::RT_ZAKUPKI;
     rp->customer_inn = ui->lineEdit_4->text().trimmed();
     rp->gbrs_inn = ui->lineEdit_9->text().trimmed();
     rp->gbrs_kpp = ui->lineEdit_12->text().trimmed();
@@ -216,7 +225,7 @@ void MainWindow::filterSearchButtonPressed()
 
     qWarning() << "POINTER: " << rp;
 
-    rpool->addZakupkiFilterReq(rp, this, SLOT(acceptMultipleRequest(RequestGroup*)));
+    rpool->addZakupkiFilterReq(rp, this, SLOT(acceptFilterZakupkiRequest(RequestGroup*)));
 }
 
 void MainWindow::clearTextEditButtonPressed()
@@ -224,7 +233,18 @@ void MainWindow::clearTextEditButtonPressed()
     ui->plainTextEdit->clear();
 }
 
-
+void MainWindow::clearFilterZakupkiButtonPressed()
+{
+    ui->lineEdit_4->clear();
+    ui->lineEdit_9->clear();
+    ui->lineEdit_12->clear();
+    ui->checkBox_7->setChecked(false);
+    ui->checkBox_6->setChecked(false);
+    ui->lineEdit_14->setText("0");
+    ui->lineEdit_13->setText("200000000000");
+    ui->dateEdit_6->setDate(QDate::fromString("01.01.2008", "dd.MM.yyyy"));
+    ui->dateEdit_5->setDate(QDateTime::currentDateTime().date());
+}
 
 void MainWindow::acceptSingleRequest(RequestGroup *pgroup)
 {
@@ -284,56 +304,51 @@ void MainWindow::acceptSingleRequest(RequestGroup *pgroup)
 
 void MainWindow::acceptMultipleRequest(RequestGroup *pgroup)
 {
-    lastgroup = rpool->extractDataAndFree(pgroup);
+    lastmultiplegroup = rpool->extractDataAndFree(pgroup);
 //    zakupki::contract_record record = data[0];
 
-    for (auto &it : lastgroup){
+    for (auto &it : lastmultiplegroup){
         ui->plainTextEdit_2->appendPlainText(QString("# Index : ") + QString::number(it.indices[0])
                 + QString(", value =") + it.values[0]);
     }
-
-    //    qWarning() << "OLOLO, we are here!!!";
 }
 
-void MainWindow::acceptFilterRequest(RequestGroup *pgroup)
+
+void MainWindow::acceptFilterZakupkiRequest(RequestGroup *pgroup)
 {
     qWarning() << "we are doing nothing here!";
+
+    lastzakupkigroup = rpool->extractDataAndFree(pgroup);
+
+    qWarning() << "Before Filtering last zakupki group size = "<< lastzakupkigroup.size();
+
+    Group newlist;
+//    lastzakupkigroup.clear();
+    for (int i = 0; i < lastzakupkigroup.size(); ++i) {
+        zakupki::contract_record &el = lastzakupkigroup[i];
+        if (match(*rp, el)) {
+            newlist.append(el);
+        }
+    }
+    lastzakupkigroup = newlist;
+
+    qWarning() << "zakupki group size " << lastzakupkigroup.size();
 }
 
 void MainWindow::exportToExcelMultipleRequestButtonPressed()
 {
-    QXlsx::Document xlsx;
-
-    if (!lastgroup.isEmpty()) {
-
-        zakupki::contract_record &curr_record = lastgroup[0];
-        if (curr_record.rtype != zakupki::RT_ZAKUPKI) {
-            for (size_t j = 0; j < zakupki::AG_FIELDS_HEADERS.size(); ++j) {
-                xlsx.write(numToLetter(j) + QString::number(1), zakupki::AG_FIELDS_HEADERS[j]);
-            }
-        } else {
-            for (size_t j = 0; j < zakupki::CC_FIELDS_HEADERS.size(); ++j) {
-                xlsx.write(numToLetter(j) + QString::number(1), zakupki::CC_FIELDS_HEADERS[j]);
-            }
-        }
-
-        for (size_t i = 0; i < lastgroup.size(); ++i) {
-            zakupki::contract_record &curr_record = lastgroup[i];
-
-            for (size_t j = 0; j < curr_record.values.size(); ++j) {
-                int column_index = curr_record.indices[j];
-                xlsx.write(numToLetter(column_index) + QString::number(i + 2), curr_record.values[j]);
-            }
-        }
-
-        xlsx.saveAs(ui->lineEdit_10->text() + ".xlsx");
-    }
+    exportGroupToExcel(lastmultiplegroup, ui->lineEdit_10->text() + ".xlsx");
 }
 
 void MainWindow::exportToExcelBudgetFilterButtonPressed()
 {
     qWarning() << "button?";
     rpool->exportToExcelBudgetFilter(ui->lineEdit_11->text());
+}
+
+void MainWindow::exportToExcelZakupkiFilterButtonPressed()
+{
+    exportGroupToExcel(lastzakupkigroup, ui->lineEdit_15->text() + ".xlsx");
 }
 
 void MainWindow::process()

@@ -67,7 +67,9 @@ private:
 
     QObject *filterzakupki_lastobj;
     const char *filterzakupki_lastslot;
+    FilterRequestParams *filterzakupki_lastrp;
     QStringList last_zakupki_ids;
+    Group last_zakupkiFilter;
 
     QVector<int> last_budgetFilter;
 
@@ -108,9 +110,10 @@ private slots:
     void acceptZakupkiOrganizationInfoPage(FileDownloader *ploader);
 
 signals:
-
+    void readyFilterZakupki();
 };
 
-QString numToLetter(int x);
+bool match_str(QString &str, QString &pattern);
+bool match(FilterRequestParams &rp, zakupki::contract_record &x);
 
 #endif // REQUESTPOOL_H

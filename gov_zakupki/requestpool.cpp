@@ -151,7 +151,16 @@ bool match(FilterRequestParams &rp, zakupki::contract_record &x) {
 
         return true;
     } else {
-        return false;
+        qWarning() << "ZAKUPKI CASE";
+        if (!rp.gbrs_kpp.isEmpty()) {
+            int t = find_index(x.indices, zakupki::CC_INDEX_PROVIDER_KPP);
+            qWarning() << "gbrskpp " << rp.gbrs_kpp << " t = " << t << " xvalue[t]="<< x.values[t];
+
+            if (!match_str(x.values[t], rp.gbrs_kpp))
+                return false;
+        }
+
+        return true;
     }
 }
 
@@ -412,7 +421,7 @@ void RequestPool::acceptZakupkiFilterSearchResults(FileDownloader *ploader)
     qWarning() << "ok!" << rp;
     ++rp->page_num;
     qWarning() << "ok2!";
-    if (!positions.isEmpty() && rp->page_num < ZAKUPKI_MAX_PAGES_WITH_100_PER_PAGE) {
+    if (!positions.isEmpty() && rp->page_num <= ZAKUPKI_MAX_PAGES_WITH_100_PER_PAGE) {
 
         // UPGRADE
 
@@ -423,16 +432,22 @@ void RequestPool::acceptZakupkiFilterSearchResults(FileDownloader *ploader)
         filePool->addDownload(new_url, this, SLOT(acceptZakupkiFilterSearchResults(FileDownloader*)),
                               (void*)rp);
     } else {
+//        addGroup(last_zakupki_ids, filterzakupki_lastobj, filterzakupki_lastslot);
+
+
+        qWarning() << "Найденные ссылки: (" << last_zakupki_ids.size()<< ")";
+        for (auto &it : last_zakupki_ids) {
+            qWarning() << "* " << it;
+        }
+
         addGroup(last_zakupki_ids, filterzakupki_lastobj, filterzakupki_lastslot);
     }
 
-    qWarning() << "Найденные ссылки:";
-    for (auto &it : last_zakupki_ids) {
-        qWarning() << "* " << it;
-    }
 
-//    addGroup(IDs, filterreq_lastobj, filterreq_lastslot);
+
+    //    addGroup(IDs, filterreq_lastobj, filterreq_lastslot);
 }
+
 
 void RequestPool::acceptBudgetDbInitPage(FileDownloader *ploader)
 {
@@ -605,12 +620,3 @@ void RequestPool::acceptZakupkiOrganizationInfoPage(FileDownloader *ploader)
 //    sl << customer_title << cpz << fz94id << inn;
 }
 
-QString numToLetter(int x)
-{
-    if (x < 26)
-        return QString('A' + x);
-
-    int a = x / 26  - 1;
-    int b = x % 26;
-    return QString('A' + char(a)) + QString('A' + char(b));
-}

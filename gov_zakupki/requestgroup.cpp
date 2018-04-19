@@ -130,9 +130,9 @@ void SingleRequest::parseZakupkiGeneralInfoPage(FileDownloader *loader)
     provider_title = removeHtml(provider_title);
     record->add_param(zakupki::CC_INDEX_PROVIDER_NAME, provider_title);
     record->add_param(zakupki::CC_INDEX_PROVIDER_INN,
-        extractParam1(html, "ИНН", provider_pos));
+        extractParam1(html, "ИНН", provider_pos).trimmed());
     record->add_param(zakupki::CC_INDEX_PROVIDER_KPP,
-        removeHtml(extractParam1(html, "КПП", provider_pos).split('\n')[0]));
+        removeHtml(extractParam1(html, "КПП", provider_pos).split('\n')[0]).trimmed());
 
     checkReady();
 }
@@ -346,7 +346,8 @@ RequestGroup::RequestGroup(QString singleReq, QObject *obj, const char *slot,
                            bool needFiles, bool needTransferInfo, ReqDocumentManager *docmanager,
                            QObject *parent):
     QObject(parent), responseObject(obj), responseSlot(slot),
-    activatedReqs(0), acceptedReqs(0), totalReqs(0)
+    activatedReqs(0), acceptedReqs(0), totalReqs(0),
+    rp(nullptr)
 {
     requests_params.append(RequestParams(singleReq, needFiles, needTransferInfo, docmanager));
 }
@@ -355,7 +356,8 @@ RequestGroup::RequestGroup(QStringList &reqs, QObject *obj, const char *slot,
                            bool needFiles, bool needTransferInfo, ReqDocumentManager *docmanager,
                            QObject *parent):
     QObject(parent), responseObject(obj), responseSlot(slot),
-    activatedReqs(0), acceptedReqs(0), totalReqs(0)
+    activatedReqs(0), acceptedReqs(0), totalReqs(0),
+    rp(nullptr)
 {
     for (auto &it : reqs) {
         requests_params.append(RequestParams(it, needFiles, needTransferInfo, docmanager));
@@ -458,4 +460,44 @@ QString FilterRequestParams::constructZakupkiUrl(int pagenum)
     }
 
     return new_url;
+}
+
+QString numToLetter(int x)
+{
+    if (x < 26)
+        return QString('A' + x);
+
+    int a = x / 26  - 1;
+    int b = x % 26;
+    return QString('A' + char(a)) + QString('A' + char(b));
+}
+
+void exportGroupToExcel(Group &group, QString fullFilename)
+{
+    QXlsx::Document xlsx;
+
+    if (!group.isEmpty()) {
+
+        zakupki::contract_record &curr_record = group[0];
+        if (curr_record.rtype != zakupki::RT_ZAKUPKI) {
+            for (size_t j = 0; j < zakupki::AG_FIELDS_HEADERS.size(); ++j) {
+                xlsx.write(numToLetter(j) + QString::number(1), zakupki::AG_FIELDS_HEADERS[j]);
+            }
+        } else {
+            for (size_t j = 0; j < zakupki::CC_FIELDS_HEADERS.size(); ++j) {
+                xlsx.write(numToLetter(j) + QString::number(1), zakupki::CC_FIELDS_HEADERS[j]);
+            }
+        }
+
+        for (size_t i = 0; i < group.size(); ++i) {
+            zakupki::contract_record &curr_record = group[i];
+
+            for (size_t j = 0; j < curr_record.values.size(); ++j) {
+                int column_index = curr_record.indices[j];
+                xlsx.write(numToLetter(column_index) + QString::number(i + 2), curr_record.values[j]);
+            }
+        }
+
+        xlsx.saveAs(fullFilename);
+    }
 }

@@ -5,6 +5,7 @@
 
 #include <QStringList>
 #include <QVector>
+#include <QDebug>
 
 using std::size_t;
 
@@ -93,7 +94,9 @@ struct contract_record {
 
     bool isReady() {
         if ((rtype == RT_ZAKUPKI && values.length() == CC_MAX_FIELDS) ||
-            (rtype == RT_BUDGET  && values.length() == AG_MAX_FIELDS))
+            (rtype == RT_BUDGET  && values.length() == AG_MAX_FIELDS)) {
+            qWarning() << "debug#4 " << values.length();
+        }
             return true;
         return false;
     }
