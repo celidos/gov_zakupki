@@ -40,6 +40,7 @@ SOURCES += \
     common.cpp \
     requestpool.cpp \
     requestgroup.cpp \
+    globalstatusbar.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -55,6 +56,7 @@ HEADERS += \
     common.h \
     requestpool.h \
     requestgroup.h \
+    globalstatusbar.h
 
 FORMS += \
         mainwindow.ui

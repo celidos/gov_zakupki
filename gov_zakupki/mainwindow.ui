@@ -43,13 +43,13 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="verticalTabWidget_2Page1">
        <attribute name="title">
         <string>Поиск по UID</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_10">
+       <layout class="QVBoxLayout" name="verticalLayout_14">
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
@@ -69,62 +69,173 @@
           <item>
            <widget class="QPushButton" name="pushButton">
             <property name="text">
-             <string>Искать</string>
+             <string>Поиск</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <widget class="QSplitter" name="splitter_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
           </property>
-          <widget class="QWidget" name="layoutWidget">
-           <layout class="QHBoxLayout" name="horizontalLayout_4"/>
+          <widget class="QWidget" name="tab_5">
+           <attribute name="title">
+            <string>Информация</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4"/>
+            </item>
+           </layout>
           </widget>
-          <widget class="QSplitter" name="splitter">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <widget class="QWidget" name="verticalLayoutWidget_2">
-            <layout class="QVBoxLayout" name="verticalLayout_9">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_2">
-               <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="text">
-                  <string>Документы</string>
+          <widget class="QWidget" name="tab_6">
+           <attribute name="title">
+            <string>Документы</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_9">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <item>
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>Документы</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_7">
+           <attribute name="title">
+            <string>Сведения о перечислении (budget)</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_13">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout">
+              <item>
+               <widget class="QTableWidget" name="tableWidget"/>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_4">
+                <property name="title">
+                 <string>Экспорт</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_16">
+                 <property name="spacing">
+                  <number>4</number>
                  </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                 <property name="leftMargin">
+                  <number>4</number>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
+                 <property name="topMargin">
+                  <number>4</number>
                  </property>
-                </spacer>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_3"/>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="verticalLayoutWidget">
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <item>
-              <widget class="QTableWidget" name="tableWidget"/>
-             </item>
-            </layout>
-           </widget>
+                 <property name="rightMargin">
+                  <number>4</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>4</number>
+                 </property>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_10">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Экспорт в xls</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_24">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>            Имя файла:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_16">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>200</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>test</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_25">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>.xlsx</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_11">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>
@@ -181,9 +292,6 @@
            <widget class="QPlainTextEdit" name="plainTextEdit"/>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QPlainTextEdit" name="plainTextEdit_2"/>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_6"/>
@@ -293,7 +401,7 @@
            <item>
             <widget class="QPushButton" name="pushButton_3">
              <property name="text">
-              <string>Искать!</string>
+              <string>Поиск</string>
              </property>
             </widget>
            </item>
@@ -323,7 +431,7 @@
         <item>
          <widget class="QGroupBox" name="groupBox_2">
           <property name="title">
-           <string>Фильтр</string>
+           <string>Фильтр по zakupki</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <property name="leftMargin">
@@ -358,7 +466,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>736</width>
-                <height>232</height>
+                <height>328</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -628,7 +736,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Экспорт в xls</string>
+              <string>Экспорт в Excel</string>
              </property>
             </widget>
            </item>
@@ -693,259 +801,366 @@
           </layout>
          </widget>
         </item>
-        <item>
-         <widget class="QPlainTextEdit" name="plainTextEdit_3">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>50</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>90</height>
-           </size>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
         <string>Поиск по budget.gov.ru</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_8">
+       <layout class="QVBoxLayout" name="verticalLayout_17">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QPushButton" name="pushButton_8">
-            <property name="text">
-             <string>Загрузить базу в память</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Управление</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_17">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>4</number>
+           </property>
+           <property name="topMargin">
+            <number>4</number>
+           </property>
+           <property name="rightMargin">
+            <number>4</number>
+           </property>
+           <property name="bottomMargin">
+            <number>4</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="pushButton_9">
+             <property name="text">
+              <string>Поиск</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_13">
+             <property name="text">
+              <string>Сбросить фильтр</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_12">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>522</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_8">
+             <property name="text">
+              <string>  !  Загрузить базу в память  !  </string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
         <item>
-         <widget class="QSplitter" name="splitter_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+         <widget class="QGroupBox" name="groupBox_7">
+          <property name="title">
+           <string>Фильтр по budget</string>
           </property>
-          <widget class="QScrollArea" name="scrollArea_2">
-           <property name="verticalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOn</enum>
+          <layout class="QVBoxLayout" name="verticalLayout_16">
+           <property name="spacing">
+            <number>4</number>
            </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
+           <property name="leftMargin">
+            <number>0</number>
            </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents_2">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>742</width>
-              <height>451</height>
-             </rect>
-            </property>
-            <widget class="QLineEdit" name="lineEdit_5">
-             <property name="geometry">
-              <rect>
-               <x>100</x>
-               <y>30</y>
-               <width>131</width>
-               <height>21</height>
-              </rect>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QScrollArea" name="scrollArea_2">
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOn</enum>
              </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents_2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>736</width>
+                <height>328</height>
+               </rect>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <property name="spacing">
+                <number>4</number>
+               </property>
+               <property name="leftMargin">
+                <number>4</number>
+               </property>
+               <property name="topMargin">
+                <number>4</number>
+               </property>
+               <property name="rightMargin">
+                <number>4</number>
+               </property>
+               <property name="bottomMargin">
+                <number>4</number>
+               </property>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
+                 <item>
+                  <widget class="QLabel" name="label_8">
+                   <property name="text">
+                    <string>ГБРС ИНН*</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_5">
+                   <property name="text">
+                    <string>3711013676</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_9">
+                   <property name="text">
+                    <string>ГБРС КПП*</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_6">
+                   <property name="text">
+                    <string>3711013676</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_19">
+                 <item>
+                  <widget class="QLabel" name="label_20">
+                   <property name="text">
+                    <string>Получатель субсидии ИНН*</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_17">
+                   <property name="text">
+                    <string>3711013676</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_21">
+                   <property name="text">
+                    <string>Получатель субсидии КПП*</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_18">
+                   <property name="text">
+                    <string>3711013676</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_14">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_20">
+                 <item>
+                  <widget class="QLabel" name="label_7">
+                   <property name="text">
+                    <string>Период времени</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_4">
+                   <property name="text">
+                    <string>c</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDateEdit" name="dateEdit_4"/>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_5">
+                   <property name="text">
+                    <string>по</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDateEdit" name="dateEdit_3"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_15">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_21">
+                 <item>
+                  <widget class="QLabel" name="label_13">
+                   <property name="text">
+                    <string>Цена контракта с</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_7">
+                   <property name="text">
+                    <string>0</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_14">
+                   <property name="text">
+                    <string>до</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_8">
+                   <property name="text">
+                    <string>200000000000</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_16">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_6">
+          <property name="title">
+           <string>Экспорт</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_18">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>4</number>
+           </property>
+           <property name="topMargin">
+            <number>4</number>
+           </property>
+           <property name="rightMargin">
+            <number>4</number>
+           </property>
+           <property name="bottomMargin">
+            <number>4</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="pushButton_11">
              <property name="text">
-              <string>3711013676</string>
+              <string>Экспорт в Excel</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_7">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>60</y>
-               <width>131</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Период времени</string>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="checkBox_4">
-             <property name="geometry">
-              <rect>
-               <x>140</x>
-               <y>60</y>
-               <width>41</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>c</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_8">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>30</y>
-               <width>81</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>ГБРС ИНН*</string>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="checkBox_5">
-             <property name="geometry">
-              <rect>
-               <x>310</x>
-               <y>60</y>
-               <width>41</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>по</string>
-             </property>
-            </widget>
-            <widget class="QDateEdit" name="dateEdit_3">
-             <property name="geometry">
-              <rect>
-               <x>360</x>
-               <y>60</y>
-               <width>110</width>
-               <height>21</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QDateEdit" name="dateEdit_4">
-             <property name="geometry">
-              <rect>
-               <x>180</x>
-               <y>60</y>
-               <width>111</width>
-               <height>21</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_9">
-             <property name="geometry">
-              <rect>
-               <x>240</x>
-               <y>30</y>
-               <width>81</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>ГБРС КПП*</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="lineEdit_6">
-             <property name="geometry">
-              <rect>
-               <x>320</x>
-               <y>30</y>
-               <width>131</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>3711013676</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="pushButton_9">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>120</y>
-               <width>91</width>
-               <height>25</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Запрос!</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_13">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>90</y>
-               <width>131</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Цена контракта с</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="lineEdit_7">
-             <property name="geometry">
-              <rect>
-               <x>140</x>
-               <y>90</y>
-               <width>151</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="lineEdit_8">
-             <property name="geometry">
-              <rect>
-               <x>330</x>
-               <y>90</y>
-               <width>171</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>200000000000</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_14">
-             <property name="geometry">
-              <rect>
-               <x>300</x>
-               <y>90</y>
-               <width>21</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>до</string>
-             </property>
-            </widget>
+           </item>
+           <item>
             <widget class="QLabel" name="label_15">
-             <property name="geometry">
-              <rect>
-               <x>260</x>
-               <y>120</y>
-               <width>121</width>
-               <height>23</height>
-              </rect>
-             </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -956,15 +1171,9 @@
               <string>            Имя файла:</string>
              </property>
             </widget>
+           </item>
+           <item>
             <widget class="QLineEdit" name="lineEdit_11">
-             <property name="geometry">
-              <rect>
-               <x>390</x>
-               <y>120</y>
-               <width>200</width>
-               <height>21</height>
-              </rect>
-             </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -981,15 +1190,9 @@
               <string>test</string>
              </property>
             </widget>
+           </item>
+           <item>
             <widget class="QLabel" name="label_16">
-             <property name="geometry">
-              <rect>
-               <x>600</x>
-               <y>120</y>
-               <width>23</width>
-               <height>21</height>
-              </rect>
-             </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -1000,21 +1203,21 @@
               <string>.xlsx</string>
              </property>
             </widget>
-            <widget class="QPushButton" name="pushButton_11">
-             <property name="geometry">
-              <rect>
-               <x>130</x>
-               <y>120</y>
-               <width>131</width>
-               <height>25</height>
-              </rect>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_13">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
-             <property name="text">
-              <string>Экспорт в Excel</string>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
              </property>
-            </widget>
-           </widget>
-          </widget>
+            </spacer>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -1105,6 +1308,20 @@
              </layout>
             </item>
             <item>
+             <widget class="Line" name="line_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_26">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#888a85;&quot;&gt;Напоминание: маска задается символом %. В фильтрах важно соблюдать количество символов!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; color:#888a85;&quot;&gt;По вопросам обращайтесь на почту &lt;/span&gt;&lt;a href=&quot;pokonechnyy.ep@phystech.edu&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;pokonechnyy.ep@phystech.edu&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; color:#888a85;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer_2">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -1116,6 +1333,13 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#babdb6;&quot;&gt;V  (o . O) V&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>

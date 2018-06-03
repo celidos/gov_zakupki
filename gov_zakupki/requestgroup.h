@@ -58,6 +58,9 @@ struct FilterRequestParams {
     QString gbrs_inn;
     QString gbrs_kpp;
 
+    QString receiver_inn;
+    QString receiver_kpp;
+
     bool dateStartUsed;
     bool dateFinishUsed;
 

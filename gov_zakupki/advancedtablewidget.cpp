@@ -54,12 +54,55 @@ void AdvancedTableWidget::configureForZakupki(QObject *obj, const char *slot)
 {
     clear();
 
+    // custom code
+
+
+//    QStandardItemModel *model= new QStandardItemModel(row,1);
+//    model->setColumnCount(1);
+//    QString readString;
+//    for (int r = 0; r < row; r++) {
+//    for (int column = 0; column < 1; column++) {
+//    QModelIndex mindex = model->index(r, column);
+//    model->setData(mindex,readString);
+//    }
+//    }
+//    HtmlDelegate* delegate = new HtmlDelegate();
+//    setModel(model);
+//    QHeaderView* hhdr = ui->tableView->horizontalHeader();
+//    QHeaderView* vhdr = ui->tableView->verticalHeader();
+//    for (int r = 0; r < row; r++) {
+//    for (int column = 0; column < 1; column++) {
+//    vhdr->setSectionResizeMode(r, QHeaderView::ResizeToContents);
+//    hhdr->setSectionResizeMode(column, QHeaderView::Stretch);
+//    }
+//    }
+//    setWordWrap(true);
+//    setTextElideMode(Qt::ElideLeft);
+//    resizeColumnsToContents();
+//    resizeRowsToContents();
+
+//    setItemDelegate(delegate);
+
+
+
+    // custom code
+
+
+//    verticalHeader()->setSectionResizeMode(0);
+
+
     configure(zakupki::CC_MAX_FIELDS, "Copy", obj, slot);
 
     setRowCount(zakupki::CC_MAX_FIELDS);
+
     setVerticalHeaderLabels(zakupki::CC_FIELDS_HEADERS);
     setHorizontalHeaderLabels(zakupki::COLUMN_HEADERS);
     horizontalHeader()->setStretchLastSection(true);
+
+    verticalHeader()->setFixedWidth(350);
+//    set   ColumnWidth(0, int(this->width() * 0.6));
+    setWordWrap(true);
+    resizeRowsToContents();
 
     for (size_t i = 0; i < zakupki::CC_MAX_FIELDS; ++i) {
         setCellWidget(i, 1, button_widgets[i]);

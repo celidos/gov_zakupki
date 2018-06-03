@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connectionChecker = new InternetConnectionChecker(pwInternetStatusLabel, this);
 
-    qDebug() << "Is ok?";
+    workstatus::upd();
 }
 
 MainWindow::~MainWindow()
@@ -53,17 +53,21 @@ void MainWindow::configureUi()
     ui->statusBar->addWidget(pwInternetStatusLabel);
 
     // documents download progress bar
-    pwDownloadFilesProgressBar = new QProgressBar(this);
-    pwDownloadFilesProgressBar->setFixedWidth(160);
-    pwDownloadFilesProgressBar->setMaximum(0);
-    pwDownloadFilesProgressBar->setMinimum(1);
-    pwDownloadFilesProgressBar->setValue(0);
-    pwDownloadFilesProgressBar->hide();
+//    pwDownloadFilesProgressBar = new QProgressBar(this);
+//    pwDownloadFilesProgressBar->setFixedWidth(160);
+//    pwDownloadFilesProgressBar->setMaximum(0);
+//    pwDownloadFilesProgressBar->setMinimum(1);
+//    pwDownloadFilesProgressBar->setValue(0);
+//    pwDownloadFilesProgressBar->hide();
+
+    pwStatus = new QLabel(this);
+//    pwStatus->setFixedWidth(160);
+    pwStatus->setText("Инициализация программы...");
+    ui->statusBar->addWidget(pwStatus);
+    workstatus::setOutput(pwStatus);
 
     //pwDownloadFilesProgressBar->setText("Проверка интернет-соединения...");
-    ui->statusBar->addWidget(pwDownloadFilesProgressBar);
-
-//    ui->scrollArea->setWidget(ui->widget);
+//    ui->statusBar->addWidget(pwDownloadFilesProgressBar);
 
     // -------------------------------------------------------------------------
 
@@ -100,6 +104,11 @@ void MainWindow::configureUi()
     connect(ui->radioButton_2, SIGNAL(toggled(bool)),
             this, SLOT(radioButtonFillNaPressed()));
 
+    connect(ui->pushButton_10, SIGNAL(clicked()),
+            this, SLOT(exportToExcelBudgetTransferInfoButtonPressed()));
+
+    connect(ui->pushButton_13, SIGNAL(clicked()),
+            this, SLOT(clearFilterBudgetButtonPressed()));
 
     rpool->setProgressBar(ui->progressBar);
 
@@ -122,16 +131,12 @@ void MainWindow::configureTransferInfoTable()
     ui->tableWidget->setHorizontalHeaderLabels(zakupki::TRANSFER_INFO_COLUMNS_HEADERS);
     ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
 
+    ui->tableWidget->resizeColumnsToContents();
 //    for (size_t i = 0; i < zakupki::AG_MAX_FIELDS; ++i) {
 //        setCellWidget(i, 1, button_widgets[i]);
 //        button_widgets[i]->setVisible(true);
 //        setItem(i, 0, tableitems_widgets[i]);
     //    }
-}
-
-void MainWindow::postFilterZakupki(FilterRequestParams *rp)
-{
-
 }
 
 // processing data -------------------------------------------------------------
@@ -142,8 +147,6 @@ void MainWindow::copyButtonClicked(int index)
     QApplication::clipboard()->setText(text);
 }
 
-// fast f
-
 void MainWindow::refreshDataBase()
 {
     rpool->updateBudgetDatabase();
@@ -151,15 +154,21 @@ void MainWindow::refreshDataBase()
 
 void MainWindow::loadDatabaseButtonPressed()
 {
+    workstatus::upd("Загружаем базу budget...");
     rpool->loadDatabaseToMemory();
 }
 
 void MainWindow::budgetFilterSearchButtonPressed()
 {
+    workstatus::upd("Запускаем фильтр по budget...");
+
     FilterRequestParams rp;
     rp.recordtype = zakupki::RT_BUDGET;
     rp.gbrs_inn = ui->lineEdit_5->text().trimmed();
     rp.gbrs_kpp = ui->lineEdit_6->text().trimmed();
+
+    rp.receiver_inn = ui->lineEdit_17->text().trimmed();
+    rp.receiver_kpp = ui->lineEdit_18->text().trimmed();
 
     if (ui->checkBox_4->isChecked()) {
         rp.dateStartUsed = true;
@@ -182,6 +191,8 @@ void MainWindow::budgetFilterSearchButtonPressed()
     for (auto &it: ans) {
         qWarning() << "Good index! " << it;
     }
+//    workstatus::upd("Данные фильтра budget готовы!", true);
+    // выставляется в другом месте
 }
 
 QStringList getNumberFromQString(const QString &xString)
@@ -199,6 +210,7 @@ QStringList getNumberFromQString(const QString &xString)
 
 void MainWindow::multipleSearchButtonPressed()
 {
+    workstatus::upd("Запускаем множественный запрос...");
     QStringList req_set = getNumberFromQString(ui->plainTextEdit->toPlainText());
     ui->progressBar->setMinimum(0);
     ui->progressBar->setMaximum(req_set.length());
@@ -232,6 +244,8 @@ void MainWindow::zakupkiFilterSearchButtonPressed()
     rp->minSum = ui->lineEdit_14->text().toLongLong();
     rp->maxSum = ui->lineEdit_13->text().toLongLong();
 
+    qWarning() << "it's ok, we are here!";
+
     rpool->addZakupkiFilterReq(rp, this, SLOT(acceptFilterZakupkiRequest(RequestGroup*)));
 }
 
@@ -253,59 +267,77 @@ void MainWindow::clearFilterZakupkiButtonPressed()
     ui->dateEdit_5->setDate(QDateTime::currentDateTime().date());
 }
 
+void MainWindow::clearFilterBudgetButtonPressed()
+{
+    ui->lineEdit_5->clear();
+    ui->lineEdit_6->clear();
+    ui->lineEdit_17->clear();
+    ui->lineEdit_18->clear();
+    ui->checkBox_4->setChecked(false);
+    ui->checkBox_5->setChecked(false);
+    ui->lineEdit_7->setText("0");
+    ui->lineEdit_8->setText("200000000000");
+    ui->dateEdit_4->setDate(QDate::fromString("01.01.2008", "dd.MM.yyyy"));
+    ui->dateEdit_3->setDate(QDateTime::currentDateTime().date());
+}
+
 void MainWindow::acceptSingleRequest(RequestGroup *pgroup)
 {
     qWarning() << "ACCEPTING SINGLE REQUEST!";
     Group data = rpool->extractDataAndFree(pgroup);
-    zakupki::contract_record record = data[0];
+    zakupki::contract_record &record = lastsinglerecord;
+    record = data[0];
 
     if (record.rtype == zakupki::RT_ZAKUPKI) {
         infotable->configureForZakupki(this, SLOT(copyButtonClicked(int)));
     } else if (record.rtype == zakupki::RT_BUDGET) {
         infotable->configureForBudget(this, SLOT(copyButtonClicked(int)));
-
+        qWarning() << "SINGLE BUDGET REQUEST DEBUG OUTPUT !!! " << record.indices[1] << " " << record.values[1];
         if (!record.ag_transfer_num.isEmpty()) {
 
             ui->tableWidget->clear();
 
             QTableWidget *tw = ui->tableWidget;
-
+            tw->setHorizontalHeaderLabels(zakupki::TRANSFER_INFO_COLUMNS_HEADERS);
             for (int i = 0; i < record.ag_transfer_num.size(); ++i) {
                 QString newtext;
+                qWarning() << "transfer debug output " << QString::number(record.ag_transfer_num[i]);
 
                 ui->tableWidget->insertRow(i);
 
                 newtext = QString::number(record.ag_transfer_num[i]);
-                QTableWidgetItem *pitem1(tw->item(0, i));
+                QTableWidgetItem *pitem1(tw->item(i, 0));
                 if (pitem1) {
                     pitem1->setText(newtext);
                 } else {
-                    tw->setItem(0, i, new QTableWidgetItem(newtext));
+                    tw->setItem(i, 0, new QTableWidgetItem(newtext));
                 }
 
                 newtext = record.ag_transfer_date[i];
-                QTableWidgetItem *pitem2(tw->item(1, i));
+                QTableWidgetItem *pitem2(tw->item(i, 1));
                 if (pitem2) {
                     pitem2->setText(newtext);
                 } else {
-                    tw->setItem(1, i, new QTableWidgetItem(newtext));
+                    tw->setItem(i, 1, new QTableWidgetItem(newtext));
                 }
 
-                newtext = QString::number(record.ag_transfer_sum[i]);
-                QTableWidgetItem *pitem3(tw->item(2, i));
+                newtext = QString::number(record.ag_transfer_sum[i], 'g', 10);
+                QTableWidgetItem *pitem3(tw->item(i, 2));
                 if (pitem3) {
                     pitem3->setText(newtext);
                 } else {
-                    tw->setItem(2, i, new QTableWidgetItem(newtext));
+                    tw->setItem(i, 2, new QTableWidgetItem(newtext));
                 }
             }
-        }
+            tw->resizeColumnsToContents();
+        } // transfer info
     }
 
     for (size_t i = 0; i < record.values.length(); ++i) {
         infotable->safeSetItem(record.indices[i], 0, record.values[i]);
     }
 
+    workstatus::upd("Данные один. запроса готовы!", true);
     //    qWarning() << "OLOLO, we are here!!!";
 }
 
@@ -315,11 +347,11 @@ void MainWindow::acceptMultipleRequest(RequestGroup *pgroup)
 //    zakupki::contract_record record = data[0];
 
     for (auto &it : lastmultiplegroup){
-        ui->plainTextEdit_2->appendPlainText(QString("# Index : ") + QString::number(it.indices[0])
-                + QString(", value =") + it.values[0]);
+//        ui->plainTextEdit_2->appendPlainText(QString("# Index : ") + QString::number(it.indices[0])
+//                + QString(", value =") + it.values[0]);
     }
+    workstatus::upd("Данные готовы!", true);
 }
-
 
 void MainWindow::acceptFilterZakupkiRequest(RequestGroup *pgroup)
 {
@@ -330,7 +362,6 @@ void MainWindow::acceptFilterZakupkiRequest(RequestGroup *pgroup)
     qWarning() << "Before Filtering last zakupki group size = "<< lastzakupkigroup.size();
 
     Group newlist;
-//    lastzakupkigroup.clear();
     for (int i = 0; i < lastzakupkigroup.size(); ++i) {
         zakupki::contract_record &el = lastzakupkigroup[i];
         if (match(*rp, el)) {
@@ -339,23 +370,61 @@ void MainWindow::acceptFilterZakupkiRequest(RequestGroup *pgroup)
     }
     lastzakupkigroup = newlist;
 
-    qWarning() << "zakupki group size " << lastzakupkigroup.size();
+//    qWarning() << "zakupki group size " << lastzakupkigroup.size();
+    workstatus::upd("Данные фильтра zakupki готовы!", true);
 }
 
 void MainWindow::exportToExcelMultipleRequestButtonPressed()
 {
+    workstatus::upd("Экспортируем в Excel множ. запросы...");
     exportGroupToExcel(lastmultiplegroup, ui->lineEdit_10->text() + ".xlsx");
+    workstatus::upd("Экпорт завершен", true);
 }
 
 void MainWindow::exportToExcelBudgetFilterButtonPressed()
 {
-    qWarning() << "button?";
+    workstatus::upd("Экспортируем в Excel фильтр budget...");
     rpool->exportToExcelBudgetFilter(ui->lineEdit_11->text());
+    workstatus::upd("Экпорт завершен", true);
 }
 
 void MainWindow::exportToExcelZakupkiFilterButtonPressed()
 {
+    workstatus::upd("Экспортируем в Excel фильтр zakupki...");
     exportGroupToExcel(lastzakupkigroup, ui->lineEdit_15->text() + ".xlsx");
+    workstatus::upd("Экпорт завершен", true);
+}
+
+void MainWindow::exportToExcelBudgetTransferInfoButtonPressed()
+{
+    workstatus::upd("Экспортируем в Excel сведения о перечислении...");
+    QXlsx::Document xlsx;
+
+    if (!lastsinglerecord.ag_transfer_num.isEmpty()) {
+        QXlsx::Format boldformat;
+        boldformat.setPatternBackgroundColor(QColor::fromRgb(210, 210, 210));
+        boldformat.setFontBold(true);
+
+        for (size_t j = 0; j < zakupki::TRANSFER_INFO_COLUMNS_HEADERS.size(); ++j) {
+            QXlsx::RichString rich;
+            rich.addFragment(zakupki::TRANSFER_INFO_COLUMNS_HEADERS[j], boldformat);
+            xlsx.write(numToLetter(j) + QString::number(1), rich);
+        }
+
+        for (size_t i = 0; i < lastsinglerecord.ag_transfer_num.size(); ++i) {
+            xlsx.write(numToLetter(0) + QString::number(i + 2), lastsinglerecord.ag_transfer_num[i]);
+            xlsx.write(numToLetter(1) + QString::number(i + 2), lastsinglerecord.ag_transfer_date[i]);
+            xlsx.write(numToLetter(2) + QString::number(i + 2), lastsinglerecord.ag_transfer_sum[i]);
+//            "Номер платежного документа" << "Дата" << "Сумма перечисления";
+//            for (size_t j = 0; j < curr_record.values.size(); ++j) {
+//                int column_index = curr_record.indices[j];
+//                xlsx.write(numToLetter(column_index) + QString::number(i + 2), curr_record.values[j]);
+//            }
+        }
+
+        xlsx.saveAs(ui->lineEdit_16->text() + ".xlsx");
+    }
+    workstatus::upd("Экпорт завершен", true);
 }
 
 void MainWindow::radioButtonFillNaPressed()
@@ -370,6 +439,7 @@ void MainWindow::radioButtonFillNaPressed()
 
 void MainWindow::process()
 {
+    workstatus::upd("Запускаем одиночный запрос...");
     docmanager->current_rec = ui->lineEdit->text();
     docmanager->current_rec.remove(QRegExp(
         QString::fromUtf8("[\\s-`~!@#$%^&*()_—+=|:;<>«»?/{}\'\"\\\[\\\]\\\\]")));

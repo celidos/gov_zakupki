@@ -25,6 +25,7 @@
 #include "internetconnectionchecker.h"
 #include "requestpool.h"
 #include "requestgroup.h"
+#include "globalstatusbar.h"
 
 #include "xlsxdocument.h"
 
@@ -58,7 +59,7 @@ private:
     InternetConnectionChecker *connectionChecker;
 
     QLabel *pwInternetStatusLabel;
-    QProgressBar *pwDownloadFilesProgressBar;
+    QLabel *pwStatus;
 
     int currentPageIndex;
 
@@ -67,10 +68,9 @@ private:
     void configureUi();
         void configureTransferInfoTable();
 
-    void postFilterZakupki(FilterRequestParams *rp);
-
     Group lastmultiplegroup;
     Group lastzakupkigroup;
+    zakupki::contract_record lastsinglerecord;
     FilterRequestParams *rp;
 
 private slots:
@@ -84,6 +84,7 @@ private slots:
     // f fast
     void clearTextEditButtonPressed();
     void clearFilterZakupkiButtonPressed();
+    void clearFilterBudgetButtonPressed();
 
     void refreshDataBase();
     void loadDatabaseButtonPressed();
@@ -92,6 +93,7 @@ private slots:
     void exportToExcelMultipleRequestButtonPressed();
     void exportToExcelBudgetFilterButtonPressed();
     void exportToExcelZakupkiFilterButtonPressed();
+    void exportToExcelBudgetTransferInfoButtonPressed();
 
     void radioButtonFillNaPressed();
 

@@ -245,6 +245,8 @@ void updateRecordGeneralInfoWithJson(zakupki::contract_record *record, QJsonObje
     QJsonObject grbs = mainobj["grbs"].toObject();
     QJsonObject receiver = mainobj["receiver"].toArray().takeAt(0).toObject();
 
+    qWarning() << "NOT WORKING ET AL : " << info["regNum"].toString();
+
     record->add_param(zakupki::AG_INDEX_UID, info["regNum"].toString());
     record->add_param(zakupki::AG_INDEX_NUM_AGREEM, info["numAgreem"].toString());
     record->add_param(zakupki::AG_INDEX_DATE_AGREEM, info["dateAgreem"].toString());
@@ -263,13 +265,18 @@ void updateRecordGeneralInfoWithJson(zakupki::contract_record *record, QJsonObje
 
 void updateRecordTransferInfoWithJson(zakupki::contract_record *record, QJsonObject &mainobj) {
     QJsonArray pay = mainobj["payments"].toArray();
+
+    qWarning() << "INPUT: " << mainobj["payments"];
     foreach (const QJsonValue & value, pay) {
+
         QJsonObject obj = value.toObject();
         record->ag_transfer_date.append(QDateTime::fromString(obj["date"].toString(), "yyyyMMdd").
                 toString("dd.MM.yyyy"));
 
+
+         qWarning() << "Gay ATTACK! " << obj["num"].toString().toLongLong();
         record->ag_transfer_num.append(obj["num"].toString().toLongLong());
-        record->ag_transfer_sum.append(obj["sum"].toString().toLongLong());
+        record->ag_transfer_sum.append(obj["sumRub"].toString().toDouble());
     }
 }
 
@@ -313,6 +320,8 @@ void SingleRequest::checkReady()
     if (record->isReady()) {
         qWarning() << "Oh, record is ready!";
         emit ready(this);
+    } else {
+        qWarning() << "Record is not ready!";
     }
 }
 

@@ -78,7 +78,7 @@ const size_t CC_REQ_SHORT_LEN = 19;
 const size_t AG_REQ_FULL_LEN = 20;
 const size_t AG_REQ_SHORT_LEN = 11;
 
-const size_t AG_MAX_FIELDS = 14;
+const size_t AG_MAX_FIELDS = 15;
 QStringList ag_fields_headers_ret();
 const QStringList AG_FIELDS_HEADERS(ag_fields_headers_ret());
 
@@ -110,7 +110,7 @@ struct contract_record {
 
     QVector<qlonglong> ag_transfer_num;
     QVector<QString> ag_transfer_date;
-    QVector<qlonglong> ag_transfer_sum;
+    QVector<double> ag_transfer_sum;
 
     void add_param(int index, QString value) {
         values.append(value);
@@ -120,10 +120,11 @@ struct contract_record {
     bool isReady() {
         if ((rtype == RT_ZAKUPKI && values.length() == CC_MAX_FIELDS) ||
             (rtype == RT_BUDGET  && values.length() == AG_MAX_FIELDS)) {
-//            qWarning() << "debug#4 " << values.length();
+            qWarning() << "debug#4 " << values.length();
 
             return true;
         }
+        qWarning() << "debug#4 " << values.length();
         return false;
     }
 };
@@ -132,6 +133,8 @@ QStringList transfer_info_fields_headers_ret();
 const QStringList TRANSFER_INFO_COLUMNS_HEADERS(transfer_info_fields_headers_ret());
 
 static bool switcher_FILL_NOT_FOUND(true);
+
+
 
 } // namespace zakupki
 

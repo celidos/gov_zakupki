@@ -10,6 +10,7 @@
 #include "requestgroup.h"
 #include "reqdocumentmanager.h"
 #include "filedownloadspool.h"
+#include "globalstatusbar.h"
 
 #include "xlsxdocument.h"
 

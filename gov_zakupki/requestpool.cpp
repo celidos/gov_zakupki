@@ -6,7 +6,7 @@ RequestPool::RequestPool(ReqDocumentManager *manager,
     budgetDbAcceptedPagesCount(0), budgetDbSubmittedPagesCount(0),
     budgetDbReady(false), zakupkiOrgDbAcceptedPagesCount(0),
     zakupkiOrgDbMaxPagesCount(0), zakupkiOrgDbSubmittedPagesCount(0),
-    zakupkiOrgDbReady(false)
+    zakupkiOrgDbReady(false), filterzakupki_lastrp(nullptr)
 {
     fpool = FileDownloadsPool::instance();
 }
@@ -36,7 +36,7 @@ void RequestPool::addSingleReq(QString req, QObject *obj, const char *slot,
 {
     qWarning() << "LOLKEK";
     QStringList reqs(req);
-    addGroup(reqs, obj, slot, needFiles, info);
+    addGroup(reqs, obj, slot, needFiles, needTransferInfo, info);
 }
 
 void RequestPool::addGroup(QStringList &reqs, QObject *obj, const char *slot,
@@ -60,14 +60,21 @@ void RequestPool::addGroup(QStringList &reqs, QObject *obj, const char *slot,
 void RequestPool::addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj,
                                const char *slot)
 {
-    if (filterzakupki_lastrp)
-        delete filterzakupki_lastrp;
+    workstatus::upd("Получаем сведения о поставщике...");
+    qWarning() << "Получаем сведения о поставщике...";
+//    if (filterzakupki_lastrp)
+//        delete filterzakupki_lastrp;
+
+//    filterzakupki_lastrp = rp;
     last_zakupki_ids.clear();
     last_zakupkiFilter.clear();
 
     filterzakupki_lastobj = obj;
     filterzakupki_lastslot = slot;
     rp->customer_inn = rp->customer_inn.trimmed();
+
+    qWarning() << "Получаем сведения о поставщике...";
+
     if (!rp->customer_inn.isEmpty()) {
         // looking for certain customer inn
         // let's know organization name firstly
@@ -77,7 +84,7 @@ void RequestPool::addZakupkiFilterReq(FilterRequestParams *rp, QObject *obj,
             + "placeOfSearch=FZ_94&organizationType=ALL&searchString="
             + rp->customer_inn
             + "&page=1";
-
+        qWarning() << customer_inn_url;
         fpool->addDownload(customer_inn_url, this,
                            SLOT(acceptCustomerInn(FileDownloader*)),
                            (void *)rp);
@@ -96,7 +103,6 @@ int find_index(QVector<int> &ind, int lookingFor)
     }
     return 0;
 }
-
 
 bool match_str(QString &str, QString &pattern) {
     if (str.length() != str.length())
@@ -122,6 +128,22 @@ bool match(FilterRequestParams &rp, zakupki::contract_record &x) {
             if (!match_str(x.values[t], rp.gbrs_kpp))
                 return false;
         }
+
+        //
+
+        if (!rp.receiver_inn.isEmpty()) {
+            int t = find_index(x.indices, zakupki::AG_INDEX_RECEIVER_INN);
+            if (!match_str(x.values[t], rp.receiver_inn))
+                return false;
+        }
+        if (!rp.receiver_kpp.isEmpty()) {
+            int t = find_index(x.indices, zakupki::AG_INDEX_RECEIVER_KPP);
+            if (!match_str(x.values[t], rp.receiver_kpp))
+                return false;
+        }
+
+        //
+
 
         if (rp.dateStartUsed) {
             int t = find_index(x.indices, zakupki::AG_INDEX_DATE_AGREEM);
@@ -183,8 +205,10 @@ QVector<int> RequestPool::addBudgetFilter(FilterRequestParams &rp)
                 last_budgetFilter.append(i);
             }
         }
+        workstatus::upd("Данные фильтра budget готовы", true);
         return last_budgetFilter;
     }
+    workstatus::upd("Не загружена база budget", false, true);
     return QVector<int>();
 }
 
@@ -371,9 +395,9 @@ OrganizationInfo getGoodOrganizationName(QString &html)
     return orginfo;
 }
 
-
 void RequestPool::acceptCustomerInn(FileDownloader *ploader)
 {
+    qWarning() << "Zakupki cutomer inn still here!";
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
 
     FilterRequestParams *rp = (FilterRequestParams *)ploader->info;
@@ -495,6 +519,8 @@ void RequestPool::acceptBudgetDbPartialData(FileDownloader *ploader)
 
     qWarning() << "accepted page " << budgetDbAcceptedPagesCount;
     ++budgetDbAcceptedPagesCount;
+    workstatus::upd(QString("Загружаем базу budget (") + QString::number(budgetDbAcceptedPagesCount)
+                    + "/" + QString::number(budgetDbMaxPagesCount) + ")");
 
     if (progressbar) {
         progressbar->setValue(budgetDbAcceptedPagesCount);
@@ -516,6 +542,7 @@ void RequestPool::acceptBudgetDbPartialData(FileDownloader *ploader)
 
     if (budgetDbAcceptedPagesCount >= budgetDbMaxPagesCount) {
         budgetDbReady = true;
+        workstatus::upd("База budget готова к работе!", true);
     }
 
     if (budgetDbSubmittedPagesCount < budgetDbMaxPagesCount) {
@@ -525,10 +552,7 @@ void RequestPool::acceptBudgetDbPartialData(FileDownloader *ploader)
                            + "&blocks=info,grbs,rcv,change",
                            this, SLOT(acceptBudgetDbPartialData(FileDownloader*)));
         ++budgetDbSubmittedPagesCount;
-
     }
-
-    qWarning() << budget_db.size();
 }
 
 void RequestPool::acceptZakupkiOrganizationInfoPage(FileDownloader *ploader)
@@ -537,8 +561,6 @@ void RequestPool::acceptZakupkiOrganizationInfoPage(FileDownloader *ploader)
 
     FileDownloadsPool *filePool = FileDownloadsPool::instance();
     QString html = QString(filePool->extractDataAndFree(ploader));
-
-//    qWarning() << html;
 
     if (html.indexOf("noDataToDisplay") != -1) {
         qWarning() << "page" << zakupkiOrgDbAcceptedPagesCount << "broken!";
@@ -580,8 +602,6 @@ void RequestPool::acceptZakupkiOrganizationInfoPage(FileDownloader *ploader)
 
     int local_pos_index = local_start_index;
 
-//    qWarning() << "inn " << inn;
-
 //     --------------------------------------------------
 
     int purchase_starttitle_pos = 0;
@@ -610,22 +630,12 @@ void RequestPool::acceptZakupkiOrganizationInfoPage(FileDownloader *ploader)
              (temp) - purchase_title_pos - 4);
         org_db[local_pos_index].kpp = removeHtml(customer_kpp);
 
-//        qWarning() << "customer title :" << customer_title << "; kpp " << customer_kpp;
-
         purchase_title_pos = temp;
         ++local_pos_index;
-
-//        qWarning() << "custom_title" << customer_title;
     }
-//    qWarning() << "Full of pidors!";
-//    qWarning() << zakupkiOrgDbAcceptedPagesCount;
     ++zakupkiOrgDbAcceptedPagesCount;
-//    qWarning() << zakupkiOrgDbAcceptedPagesCount;
     if (progressbar) {
         progressbar->setValue(zakupkiOrgDbAcceptedPagesCount);
     }
-
-//    QStringList sl;
-//    sl << customer_title << cpz << fz94id << inn;
 }
 

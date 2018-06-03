@@ -13,8 +13,6 @@
 #include "zakupki.h"
 #include "multiplepushbutton.h"
 
-
-
 class AdvancedTableWidget : public QTableWidget
 {
     Q_OBJECT
